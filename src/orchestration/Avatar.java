@@ -170,12 +170,10 @@ public class Avatar implements Runnable {
 	private class CollisionWatch implements Runnable
 	{
 		private float REALLY_CLOSE = 200.0f;
-		private float KINDA_CLOSE = 400.0f;
 		
 		public CollisionWatch()
 		{
 			REALLY_CLOSE = bot.safeDistance(0) * 1.2f;
-			KINDA_CLOSE = bot.safeDistance(0) * 2.0f;
 		}
 		
 		@Override
@@ -191,59 +189,22 @@ public class Avatar implements Runnable {
 					if (otherBot.isActive() == false) continue;
 					if (parent.priority(otherBot) < parent.priority(Avatar.this)) continue;
 					
-					if (otherBot.location().distance(myLoc) < KINDA_CLOSE)
+					if (otherBot.location().distance(myLoc) < REALLY_CLOSE)
 					{
 						if (task != null) task.halt();
 						while (!task.isHalted()) Thread.yield();
-						try
+						bot.getNav().stop();
+						
+						while (otherBot.location().distance(myLoc) < REALLY_CLOSE)
 						{
-							bot.getNav().stop();
-							
-							do
-							{
-								Point otherLoc = otherBot.location();
-								if (otherLoc.distance(myLoc) < REALLY_CLOSE)
-								{
-									bot.getNav().travel(-REALLY_CLOSE);
-								}
-								bot.getNav().rotateTo(bot.getNav().angleTo(otherLoc.x, otherLoc.y) + 90.0f);
-								Thread.sleep(500);
-							}
-							while (otherBot.location().distance(myLoc) < KINDA_CLOSE);
+							Thread.yield();
 						}
-						catch (InterruptedException e)
-						{
-							return;
-						}
-						finally
-						{
-							if (task != null) task.resume();
-						}
+
+						if (task != null) task.resume();
 					}
 				}
 				
 				Thread.yield();
-			}
-		}
-		
-		private class FreezeBehaviour implements Runnable
-		{
-			@Override
-			public void run()
-			{
-				// TODO Auto-generated method stub
-				
-			}
-			
-		}
-		
-		private class RunBehaviour implements Runnable
-		{
-			@Override
-			public void run()
-			{
-				// TODO Auto-generated method stub
-				
 			}
 		}
 	}

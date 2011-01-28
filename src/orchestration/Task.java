@@ -49,7 +49,7 @@ public class Task {
 				try
 					{
 					Point ballLoc = ball.getLocation();
-					bot.getNav().goToShort(ballLoc.x, ballLoc.y, 120, false);
+					bot.getNav().goToShort(ballLoc.x, ballLoc.y, 140, false);
 					if (halted) continue;
 					ball.fetch().execute(bot);
 					unExpire();
