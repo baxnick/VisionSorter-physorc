@@ -2,6 +2,9 @@ package orchestration;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -258,6 +261,20 @@ public class TaskOverlord {
 		writeLock.unlock();
 	}
 	
+	// Arranges balls so that oldest is first
+	// Utterly useless at the moment now that I think of it....
+	private class BallOrderingComparator implements Comparator<ball_t>
+	{
+		@Override
+		public int compare(ball_t b1, ball_t b2)
+		{
+			if (b1.age < b2.age) return 1;
+			else if (b1.age == b2.age) return 0;
+			else return -1;
+		}
+		
+	}
+	
 	String firstSource = null;
 	private class BallSubscriber implements LCMSubscriber
 	{
@@ -282,8 +299,11 @@ public class TaskOverlord {
 			   return;
 		   }
 		   
+		   List<ball_t> orderedBalls = Arrays.asList(detected.balls);
+		   Collections.sort(orderedBalls, new BallOrderingComparator());
+		   
 		   ArrayList<Ball> javinatedBalls = new ArrayList<Ball>(20);
-		   for (ball_t ball : detected.balls)
+		   for (ball_t ball : orderedBalls)
 		   {
 			   Ball javaBall = new Ball(
 					   new Point((float)ball.position[0], (float)ball.position[1]),
