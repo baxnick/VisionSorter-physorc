@@ -48,7 +48,7 @@ public class Task {
 			{
 				try
 					{
-					Point ballLoc = ball.getLocation(bot.location());
+					Point ballLoc = ball.getLocation();
 					bot.getNav().goToShort(ballLoc.x, ballLoc.y, 120, false);
 					if (halted) continue;
 					ball.fetch().execute(bot);
@@ -115,6 +115,7 @@ public class Task {
 			else if (state == TaskState.ABANDONED)
 			{
 				taskActive = false;
+				bot.getGrip().release();
 				overlord.abortTask(this);
 			}
 			else if (state == TaskState.DELAYED)

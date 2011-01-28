@@ -22,7 +22,7 @@ public class Ball {
 		return new FetchBallBehaviour(location.location());
 	}
 	
-	public Point getLocation(Point sourceLocation)
+	public Point getLocation()
 	{
 		return location.location();
 	}

@@ -24,37 +24,56 @@ public class TaskOverlord {
 		this.parent = parent;
 	}
 	
-	private int current = 0;
 	public synchronized Task requestDuty(Avatar soldier)
 	{
 		while (balls.size() == 0) Thread.yield();
-		Ball nearestBall = balls.get(0);
-		
+
 		Point avatarLoc = soldier.location();
 		
+		Ball nearestBall = findNearestBall(avatarLoc);
+		Goal nearestGoal = findBestGoal(avatarLoc, nearestBall);
+		
+		Task newTask = new Task(this, nearestBall, nearestGoal);
+		tasks.add(newTask);
+		balls.remove(nearestBall);
+		
+		return newTask;
+	}
+	
+	public Ball findNearestBall(Point avatarLoc)
+	{
+		if (balls.size() == 0) return null; // DANGER
+		
+		Ball nearestBall = balls.get(0);
 		for (Ball ball : balls)
 		{
 			if (
-					ball.getLocation(avatarLoc).distance(avatarLoc) < 
-					nearestBall.getLocation(avatarLoc).distance(avatarLoc))
+					ball.getLocation().distance(avatarLoc) < 
+					nearestBall.getLocation().distance(avatarLoc))
 			{
 				nearestBall = ball;
 			}
 		}
-
-		Point nearestBallLoc = nearestBall.getLocation(avatarLoc);
 		
+		return nearestBall;
+	}
+	
+	public Goal findBestGoal(Point avatarLoc, Ball ball)
+	{
+		Point nearestBallLoc = ball.getLocation();
 		List<Goal> suitableGoals = new ArrayList<Goal>();
 		
 		while (suitableGoals.size() == 0)
 		{
 			for (Goal goal : goals)
 			{
-				if (goal.accepts(nearestBall)) suitableGoals.add(goal);
+				if (goal.accepts(ball)) suitableGoals.add(goal);
 			}
 			
 			if (suitableGoals.size() == 0) Thread.yield();
 		}
+		
+		if (suitableGoals.size() == 0) return null; // DANGER
 		
 		Goal nearestGoal = suitableGoals.get(0);
 		
@@ -68,11 +87,7 @@ public class TaskOverlord {
 			}
 		}
 		
-		Task newTask = new Task(this, nearestBall, nearestGoal);
-		tasks.add(newTask);
-		balls.remove(nearestBall);
-		
-		return newTask;
+		return nearestGoal;
 	}
 	
 	public void announceGoal(Goal goal)
@@ -95,17 +110,17 @@ public class TaskOverlord {
 		balls = detectedBalls;
 	}
 	
-	private static final float threshold = 0.01f;
+	private static final float threshold = 10f;
 	
 	public Ball getBall(float x, float y)
 	{
 		for (Ball ball : balls)
 		{
-			Point ballLoc = ball.getLocation(new Point(0, 0));
+			Point ballLoc = ball.getLocation();
 			double x_diff = Math.abs(x - ballLoc.x) / x;
 			double y_diff = Math.abs(y - ballLoc.y) / y;
 			
-			if (x_diff <= threshold && y_diff <= threshold) return ball;
+			if (Math.sqrt(x_diff * x_diff + y_diff * y_diff) <= threshold) return ball;
 		}
 		
 		return null;
@@ -115,10 +130,6 @@ public class TaskOverlord {
 	{
 		if (tasks.contains(task))
 		{
-			if (!task.hasBall())
-			{
-				balls.add(task.getBall());
-			}
 			tasks.remove(task);
 		}
 	}
