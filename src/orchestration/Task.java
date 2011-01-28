@@ -3,20 +3,27 @@ package orchestration;
 import orchestration.goal.Goal;
 import orchestration.object.Ball;
 import orchestration.object.BotLocationProvider;
+import orchestration.path.PathPlanner;
+import orchestration.path.RouteMaker;
 import physical.GripperBot;
 import lejos.geom.Point;
 
 public class Task {
+	private PathPlanner planner;
+	private Avatar avatar;
 	private Ball ball;
 	private Goal goal;
 	private GripperBot bot;
 	private TaskOverlord overlord;
 	private TaskState state;
+	private RouteMaker router;
 	private boolean taskActive = true;
 	
-	public Task (TaskOverlord overlord, Ball ball, Goal goal)
+	public Task (TaskOverlord overlord, PathPlanner planner, Avatar avatar, Ball ball, Goal goal)
 	{
+		this.planner = planner;
 		this.overlord = overlord;
+		this.avatar = avatar;
 		this.ball = ball;
 		this.goal = goal;
 		updateState(TaskState.FETCHING);
@@ -25,6 +32,7 @@ public class Task {
 	public void assignBot(GripperBot bot)
 	{
 		this.bot = bot;
+		router = new RouteMaker(planner, bot.getNav(), avatar.getName());
 	}
 	
 	private TaskState nextState;
@@ -49,7 +57,7 @@ public class Task {
 				try
 					{
 					Point ballLoc = ball.getLocation();
-					bot.getNav().goToShort(ballLoc.x, ballLoc.y, 140, false);
+					router.follow(router.create(ballLoc, 140));
 					if (halted) continue;
 					ball.fetch().execute(bot);
 					unExpire();
@@ -75,8 +83,7 @@ public class Task {
 					
 					Point dropLoc = goal.dropPoint(bot.location());
 					
-					bot.getNav().goToShort(dropLoc.x, dropLoc.y, 
-							bot.safeDistance(goal.minimumSafeDistance()), false);
+					router.follow(router.create(dropLoc, bot.safeDistance(goal.minimumSafeDistance())));
 					if (halted) continue;
 					goal.approachStrategy(dropLoc).execute(bot);
 					if (halted) continue;
@@ -100,8 +107,8 @@ public class Task {
 				try
 				{
 				Point target = bot.getVision().visionPoint();
-				bot.getNav().goTo(target.x, target.y);
-				Thread.sleep(800);
+				router.follow(router.create(target));
+				Thread.sleep(1000);
 				nextState = continuationState;
 				}
 				catch (InterruptedException e)

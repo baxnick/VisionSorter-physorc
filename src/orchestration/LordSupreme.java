@@ -4,17 +4,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import orchestration.path.BraindeadPlanner;
+import orchestration.path.PathPlanner;
+
 import lcm.lcm.LCM;
 
 public class LordSupreme {
 	public List<Avatar> avatars = Collections.synchronizedList(new ArrayList<Avatar>(4));
+	public PathPlanner planner;
 	public TaskOverlord overlord;
 	public LCM lcm;
 	private HotBotWatch watcher;
 	
 	public LordSupreme()
 	{
-		lcm = LCM.getSingleton();  
+		lcm = LCM.getSingleton();
+		planner = new BraindeadPlanner(this);
 		overlord = new TaskOverlord(this);
 		watcher = new HotBotWatch(this);
 	}

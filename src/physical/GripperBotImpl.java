@@ -6,14 +6,9 @@ import lejos.geom.Point;
 import lejos.nxt.remote.*;
 import lejos.pc.comm.NXTComm;
 import lejos.pc.comm.NXTCommException;
-import lejos.pc.comm.NXTCommFactory;
-import lejos.pc.comm.NXTInfo;
 import lejos.robotics.Pose;
 import lejos.robotics.TachoMotor;
 import lejos.robotics.navigation.TachoPilot;
-
-import orchestration.VisionQuery;
-import orchestration.goal.Goal;
 
 public class GripperBotImpl implements GripperBot {
 	
@@ -221,5 +216,11 @@ public class GripperBotImpl implements GripperBot {
 	public VisionQuery getVision()
 	{
 		return vision;
+	}
+
+	@Override
+	public float heading()
+	{
+		return getNav().getAngle();
 	}
 }

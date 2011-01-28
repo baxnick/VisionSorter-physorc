@@ -50,7 +50,7 @@ public class TaskOverlord {
 		Goal nearestGoal = findBestGoal(avatarLoc, nearestBall);
 		
 		
-		Task newTask = new Task(this, nearestBall, nearestGoal);
+		Task newTask = new Task(this, parent.planner, soldier, nearestBall, nearestGoal);
 		takeBall(nearestBall);
 		tasks.add(newTask);
 		

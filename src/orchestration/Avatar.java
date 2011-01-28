@@ -3,14 +3,19 @@ package orchestration;
 import java.io.IOException;
 import java.util.Date;
 
+import orchestration.path.Plannable;
+import orchestration.path.PlannerShape;
+import orchestration.path.RectShape;
+
 import lcm.lcm.*;
 import lcmtypes.cube_t;
 import lejos.geom.Point;
 import lejos.pc.comm.NXTInfo;
 import physical.SimpleCallback;
 import physical.GripperBot;
+import physical.VisionQuery;
 
-public class Avatar implements Runnable {
+public class Avatar implements Runnable, Plannable {
 	private LordSupreme parent;
 	private TaskOverlord overlord;
 	private GripperBot bot;
@@ -42,7 +47,7 @@ public class Avatar implements Runnable {
 		myThread.start();
 	}
 
-	public boolean needsVision1()
+	public boolean needsVision()
 	{
 		return lastVision < System.currentTimeMillis() - acceptableReckoningTime;
 	}
@@ -54,7 +59,7 @@ public class Avatar implements Runnable {
 		cubeSubscriber = new CubeSubscriber();
 		this.parent.lcm.subscribe("CUBE", cubeSubscriber);
 		
-		while (needsVision1())
+		while (needsVision())
 		{
 			Thread.yield();
 		}
@@ -98,7 +103,7 @@ public class Avatar implements Runnable {
 		@Override
 		public boolean needsVision()
 		{
-			return Avatar.this.needsVision1();
+			return Avatar.this.needsVision();
 		}
 
 		@Override
@@ -207,5 +212,23 @@ public class Avatar implements Runnable {
 				Thread.yield();
 			}
 		}
+	}
+
+	@Override
+	public String getPlanningName()
+	{
+		return getName();
+	}
+
+	@Override
+	public PlannerShape getPlannerShape()
+	{
+		Point location = bot.location();
+		double heading = bot.heading();
+		
+		return RectShape.easy(
+				bot.getConfig().trackWidth, 
+				bot.getConfig().gripDisplacement + bot.getConfig().rearDisplacement, 
+				location, heading);
 	}
 }

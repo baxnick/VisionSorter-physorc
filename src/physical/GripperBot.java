@@ -1,7 +1,6 @@
 package physical;
 
 
-import orchestration.VisionQuery;
 import lejos.geom.Point;
 import lejos.nxt.remote.NXTCommand;
 
@@ -20,6 +19,8 @@ public interface GripperBot {
 	public abstract GripperBotConfiguration getConfig();
 	
 	public abstract float safeDistance(float minDistance);
+	
+	public abstract float heading();
 	
 	public abstract Point location();
 

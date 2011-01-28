@@ -7,5 +7,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/pccomms"/>
 	<classpathentry kind="lib" path="lib/lcmtypes.jar"/>
 	<classpathentry kind="lib" path="/usr/local/share/java/lcm.jar"/>
+	<classpathentry kind="lib" path="lib/commons-math-2.1/commons-math-2.1-javadoc.jar"/>
+	<classpathentry kind="lib" path="lib/commons-math-2.1/commons-math-2.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
