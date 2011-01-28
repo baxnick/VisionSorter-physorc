@@ -131,7 +131,8 @@ public class Avatar implements Runnable {
 	{
 		return isActive;
 	}
-	public class CubeSubscriber implements LCMSubscriber
+	
+	private class CubeSubscriber implements LCMSubscriber
 	{
 	   public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins)
 	   {
@@ -165,6 +166,7 @@ public class Avatar implements Runnable {
 		}
 	   }
 	}
+	
 	private class CollisionWatch implements Runnable
 	{
 		private float REALLY_CLOSE = 200.0f;

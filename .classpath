@@ -5,7 +5,6 @@
 	<classpathentry kind="lib" path="/home/lejos_nxj/3rdparty/lib/bluecove.jar"/>
 	<classpathentry kind="lib" path="/home/lejos_nxj/3rdparty/lib/bluecove-gpl.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pccomms"/>
-	<classpathentry kind="lib" path="/home/baxnick/stuff/jscience-5.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/lcmtypes.jar"/>
 	<classpathentry kind="lib" path="/usr/local/share/java/lcm.jar"/>
 	<classpathentry kind="output" path="bin"/>

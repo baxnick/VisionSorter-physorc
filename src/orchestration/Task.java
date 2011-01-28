@@ -52,6 +52,7 @@ public class Task {
 					bot.getNav().goToShort(ballLoc.x, ballLoc.y, 120, false);
 					if (halted) continue;
 					ball.fetch().execute(bot);
+					unExpire();
 					if (halted) continue;
 					
 					if (bot.getVision().needsVision())
@@ -187,5 +188,25 @@ public class Task {
 	public synchronized boolean isHalted()
 	{
 		return state == TaskState.DELAYED;
+	}
+
+	private long firstExpired = 0;
+	private static final long expiryAllowance = 10 * 1000;
+	
+	public void unExpire()
+	{
+		firstExpired = 0;
+	}
+	
+	public void attemptExpire()
+	{
+		long now = System.currentTimeMillis();
+		
+		if (firstExpired == 0)
+			firstExpired = now;
+		else
+		{
+			if ((now - firstExpired) > expiryAllowance) abort();
+		}
 	}
 }

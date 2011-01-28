@@ -6,6 +6,8 @@ import lejos.geom.Point;
 public class Ball {
 	private BallColor color;
 	private LocationProvider location;
+	private boolean taken = false;
+	
 	public Ball(Point location, BallColor color)
 	{
 		this.color = color;
@@ -36,5 +38,15 @@ public class Ball {
 	{
 		Point loc = location.location();
 		return color.toString() + " ball (" + loc.x + ", " + loc.y + ")";
+	}
+	
+	public void setTaken(boolean newStatus)
+	{
+		taken = newStatus;
+	}
+	
+	public boolean isTaken()
+	{
+		return taken;
 	}
 }
