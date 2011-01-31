@@ -2,6 +2,8 @@ package orchestration;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import orchestration.path.Plannable;
 import orchestration.path.PlannerShape;
@@ -25,10 +27,10 @@ public class Avatar implements Runnable, Plannable {
 	private Thread collisionThread;
 	private CubeSubscriber cubeSubscriber = null;
 	private long lastVision = 0;
-	private final int acceptableReckoningTime = 10 * 1000;
+	private final int acceptableReckoningTime = 20 * 1000;
 	private final int updateFreq = 5 * 1000;
 	
-	private Point visionZone = new Point(600, 500);
+	private Point visionZone = new Point(500, 400);
 	private boolean isActive = false;
 	private boolean connectionUp = true;
 	
@@ -66,7 +68,7 @@ public class Avatar implements Runnable, Plannable {
 		
 		isActive = true;
 		collisionThread = new Thread(new CollisionWatch());
-		collisionThread.start();
+		//collisionThread.start();
 		
 		while (connectionUp)
 		{
@@ -139,6 +141,7 @@ public class Avatar implements Runnable, Plannable {
 	
 	private class CubeSubscriber implements LCMSubscriber
 	{
+		private Lock messageLock = new ReentrantLock();
 	   public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins)
 	   {
 		   try
@@ -148,20 +151,26 @@ public class Avatar implements Runnable, Plannable {
 			if (!getName().equals(cube.id)) return;
 			
 			long now = System.currentTimeMillis();
-			if (lastVision < now - updateFreq && 
+			if (now - lastVision > updateFreq && 
 					!Avatar.this.bot.getNav().isMoving())
 			{
+				boolean locked = messageLock.tryLock();
+				if (!locked) return;
+
+				lastVision = now;
+				
+				System.out.println(getName() + " @ " + 
+						cube.position[0] + ", " + cube.position[1] + ": " + 
+						cube.orientation);
+				
 				Avatar.this.bot.getNav().setPose(
 						(float)cube.position[0], 
 						(float)cube.position[1],
 						(float)cube.orientation);
 				
 
-				System.out.println(getName() + " @ " + 
-						cube.position[0] + ", " + cube.position[1] + ": " + 
-						cube.orientation);
-				lastVision = now;
 				
+				messageLock.unlock();
 			}
 		}
 		catch (IOException e)

@@ -6,7 +6,7 @@ import lejos.nxt.remote.RemoteMotor;
 public class OverheadGripperConfig {
 	public boolean reverseDirection;
 	public float operatingSpeedMulti;
-	public int grippedTach = 210;
+	public int grippedTach = 205;
 	public int releasedTach = 130;
 	public float calibrationArc = 250.0f;
 	public int calibrationSpeed = 60;

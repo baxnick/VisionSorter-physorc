@@ -19,9 +19,9 @@ public class MultiRemote {
 		try
 		{
 			Goal southGoal = new LineGoal("SG", BallColor.BLUE, new Line(200, 30, 1000, 30), -90);
-			Goal westGoal = new LineGoal("WG", BallColor.BLUE, new Line(30, 200, 30, 1600), 180);
 			Goal northGoal = new LineGoal("NG", BallColor.RED, new Line(200, 1770, 1000, 1770), 90);
-			Goal eastGoal = new LineGoal("EG", BallColor.RED, new Line(1170, 200, 1170, 1600), 0);
+			Goal eastGoal = new LineGoal("EG", BallColor.BLUE, new Line(1150, 920, 1150, 980), 0);
+			Goal westGoal = new LineGoal("WG", BallColor.RED, new Line(50, 990, 50, 1030), 180);
 			
 			List<Ball> balls = new ArrayList<Ball>();
 			balls.add(new Ball(new Point(196, 1383), BallColor.RED));
@@ -29,11 +29,11 @@ public class MultiRemote {
 			balls.add(new Ball(new Point(310, 487), BallColor.BLUE));
 			balls.add(new Ball(new Point(889, 546), BallColor.BLUE));
 			LordSupreme hisHoliness = new LordSupreme();
-			hisHoliness.overlord.announceGoal(northGoal);
-			hisHoliness.overlord.announceGoal(southGoal);
+			//hisHoliness.overlord.announceGoal(northGoal);
+			//hisHoliness.overlord.announceGoal(southGoal);
 			hisHoliness.overlord.announceGoal(westGoal);
 			hisHoliness.overlord.announceGoal(eastGoal);
-			hisHoliness.overlord.ballsUpdate(balls);
+			//hisHoliness.overlord.ballsUpdate(balls);
 			
 			hisHoliness.start();
 		}

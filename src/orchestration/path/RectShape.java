@@ -5,7 +5,7 @@ import java.awt.Polygon;
 
 import org.apache.commons.math.geometry.Vector3D;
 
-public class RectShape implements PlannerShape
+public class RectShape implements PlannerShape, Cloneable
 {
 	private Polygon poly;
 	private Point centerPt;
@@ -187,5 +187,17 @@ public class RectShape implements PlannerShape
 	public Point center()
 	{
 		return centerPt;
+	}
+	
+	protected Object clone() throws CloneNotSupportedException {
+		RectShape clone = (RectShape) super.clone();
+		
+		clone.poly = new Polygon(
+				clone.poly.xpoints.clone(), 
+				clone.poly.ypoints.clone(),
+				clone.poly.npoints);
+		
+		clone.centerPt = new Point(clone.centerPt.x, clone.centerPt.y);
+		return clone;
 	}
 }

@@ -16,12 +16,14 @@ class SimpleRoute implements Route
 	
 	SimpleRoute(PathPlanner planner, RouteMode mode)
 	{
+		this.planner = planner;
 		this.mode = mode;
 	}
 	
 	SimpleRoute(PathPlanner planner, RouteMode mode, Point target)
 	{
 		this(planner, mode);
+		points.add(target);
 	}
 	
 	@Override

@@ -35,6 +35,7 @@ public class BraindeadPlanner implements PathPlanner
 	@Override
 	public Route requestRoute(String id, Point destination, float shortAmount)
 	{
+		updateObstacles();
 		PlannerShape from = obstacles.get(id);
 		java.awt.Point awtPt = from.center();
 		Point fromPt = new Point(awtPt.x, awtPt.y);

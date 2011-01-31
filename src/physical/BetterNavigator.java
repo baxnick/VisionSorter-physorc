@@ -99,7 +99,7 @@ public class BetterNavigator {
   public float getX()
   {
     updatePose();
-    _current = !isMoving();
+    
     
     poseRead.lock();
     float ret = _estimatedPose.getX();
@@ -114,7 +114,7 @@ public class BetterNavigator {
   public float getY()
   {
     updatePose();
-    _current = !isMoving();
+    
     
     poseRead.lock();
     float ret = _estimatedPose.getY();
@@ -129,7 +129,7 @@ public class BetterNavigator {
   public float getHeading()
   {
     updatePose();
-        _current = !isMoving();
+        
     
     poseRead.lock();
     float ret = _estimatedPose.getHeading();
@@ -148,13 +148,13 @@ public float getAngle()
  public void forward()
  {
    updatePose();
-   _current = false;
+   
    pilot.forward();
  }
  public void backward()
  {
     updatePose();
-   _current = false;
+   
    pilot.backward();
  }
  public void rotateLeft()
@@ -168,15 +168,12 @@ public float getAngle()
   public Pose getPose()
   {
     updatePose();
-        _current = !isMoving();
-    
+        
     poseRead.lock();
-    Point currLoc = _estimatedPose.getLocation();
-    float currHeading = _estimatedPose.getHeading();
-    Point adjustedLoc = adjustedPoint(currLoc.x, currLoc.y, currHeading, 1);
+    Pose copy = copyPose(_estimatedPose);
     poseRead.unlock();
     
-    return new Pose(adjustedLoc.x, adjustedLoc.y, currHeading);
+    return copy;
   }
   public void updatePosition()
   {
@@ -199,21 +196,21 @@ public float getAngle()
  */
   public synchronized void setPose(Pose pose)
   {
+	pilotLock.lock();
 	updateLock.lock();
 	poseWrite.lock();
-    pilotLock.lock();
 
+	pilot.stop();
     pilot.reset();
     
     _pose = pose;
     _estimatedPose = copyPose(pose);
-    _current = true;
     _distance0 = 0;
     _angle0 = 0;
     
-    pilotLock.unlock();
     poseWrite.unlock();
     updateLock.unlock();
+    pilotLock.unlock();
     
   }
   
@@ -249,12 +246,10 @@ public float getAngle()
  */
   public void stop()
   {
-		boolean locked = pilotLock.tryLock();
-		if (!locked) return;
+	pilotLock.lock();
     pilot.stop();
     pilotLock.unlock();
     updatePose();
-    _current = true;
   }
 /**
  * returns true if the robot is moving
@@ -284,14 +279,12 @@ public float getAngle()
   public void travel(float distance, boolean immediateReturn) throws InterruptedException
   {
     updatePose();
-        _current = false;
+        
 
-    	boolean locked = pilotLock.tryLock();
-    	if (!locked) return;
+    pilotLock.lock();
     pilot.travel(distance, true);
     if (immediateReturn)
     	{
-    	pilotLock.unlock();
     	return;
     	}
     
@@ -326,11 +319,10 @@ public float getAngle()
   {
     int turnAngle = Math.round(angle);
     updatePose();
-      _current = false;
-	boolean locked = pilotLock.tryLock();
-	if (!locked) return;
+      
+	pilotLock.lock();
     pilot.rotate(turnAngle, immediateReturn);
-    pilotLock.unlock();
+    if (!immediateReturn) pilotLock.unlock();
   }
 
   /**
@@ -342,7 +334,6 @@ public float getAngle()
   {
     rotateTo(angle, true);
     
-    pilotLock.lock();
     boolean wasInterrupted = false;
     while (isMoving())
     {
@@ -433,7 +424,7 @@ public float getAngle()
   public float distanceTo(float x, float y)
   {
     updatePose();
-    _current = !isMoving();
+    
     
 	float gotoAngle = angleTo(x, y);
 	Point adjusted = adjustedPoint(x, y, gotoAngle, -1);
@@ -453,7 +444,7 @@ public float getAngle()
   public float angleTo(float x, float y)
   {
     updatePose();
-    _current = !isMoving();
+    
     
     poseRead.lock();
     float ret = _estimatedPose.angleTo(new Point(x, y));
@@ -462,7 +453,7 @@ public float getAngle()
     return ret;
   }
 
-  public synchronized void updatePose()
+  public void updatePose()
   {
 	boolean canUpdate = updateLock.tryLock();
 	if (!canUpdate) return;
@@ -524,7 +515,9 @@ public float getAngle()
      * If negative, the left wheel is on the outside.
      */
     public void arc(float radius) {
+    	pilotLock.lock();
         pilot.arc(radius);
+        pilotLock.unlock();
     }
 
     /**
@@ -538,6 +531,7 @@ public float getAngle()
      */
     public void arc(float radius, int angle) {
         arc(radius, angle, false);
+        pilotLock.unlock();
     }
 
     /**
@@ -553,8 +547,13 @@ public float getAngle()
      */
     public void arc(float radius, int angle, boolean immediateReturn) {
         updatePose();
-        _current = false;
+        
+        pilotLock.lock();
         pilot.arc(radius, angle, immediateReturn);
+        if (!immediateReturn)
+        {
+        	pilotLock.unlock();
+        }
     }
     
      /**
@@ -570,6 +569,7 @@ public float getAngle()
      */
     public void travelArc(float radius, float distance){
       travelArc(radius,distance,false);
+      pilotLock.unlock();
     }
     
     /**
@@ -585,7 +585,13 @@ public float getAngle()
     public void travelArc(float radius, float distance, boolean immediateReturn)
     {
       updatePose();
-        pilot.travelArc(radius, distance, immediateReturn);
+      pilotLock.lock();
+      pilot.travelArc(radius, distance, immediateReturn);
+      
+      if (!immediateReturn)
+      {
+    	  pilotLock.unlock();
+      }
     }
 
       /**
@@ -620,8 +626,10 @@ public float getAngle()
   public void steer(int turnRate)
   {
     updatePose();
-    _current = false;
+    
+    pilotLock.lock();
     pilot.steer(turnRate);
+    pilotLock.unlock();
   }
 
   /**
@@ -646,7 +654,9 @@ public float getAngle()
    */
   public void steer(int turnRate, int angle)
   {
+	pilotLock.lock();
     pilot.steer(turnRate, angle, false);
+    pilotLock.unlock();
   }
 /**
    * Moves the robot along a curved path for a specified angle of rotation. This method is similar to the
@@ -674,8 +684,19 @@ public float getAngle()
   public void steer(int turnRate, int angle, boolean immediateReturn)
   {
     updatePose();
-    _current = false;
+    
+    pilotLock.lock();
     pilot.steer(turnRate, angle, immediateReturn);
+    if (!immediateReturn)
+    {
+    	pilotLock.unlock();
+    }
+  }
+  
+  public void returnPilot()
+  {
+	pilotLock.tryLock();
+	pilotLock.unlock();  
   }
   
   public void softInterrupt()
@@ -688,7 +709,6 @@ public float getAngle()
     
     private double _distance0 = 0;
     private double _angle0 = 0;
-    private boolean _current = false; //prevent unnecessary pose updates
     private boolean _interrupted = false;
     
     private Pilot pilot;

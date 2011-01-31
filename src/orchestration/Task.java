@@ -18,6 +18,7 @@ public class Task {
 	private TaskState state;
 	private RouteMaker router;
 	private boolean taskActive = true;
+	private boolean hasBall = false;
 	
 	public Task (TaskOverlord overlord, PathPlanner planner, Avatar avatar, Ball ball, Goal goal)
 	{
@@ -32,7 +33,7 @@ public class Task {
 	public void assignBot(GripperBot bot)
 	{
 		this.bot = bot;
-		router = new RouteMaker(planner, bot.getNav(), avatar.getName());
+		router = new RouteMaker(planner, bot, avatar.getName());
 	}
 	
 	private TaskState nextState;
@@ -57,9 +58,10 @@ public class Task {
 				try
 					{
 					Point ballLoc = ball.getLocation();
-					router.follow(router.create(ballLoc, 140));
+					router.follow(router.create(ballLoc, 180));
 					if (halted) continue;
 					ball.fetch().execute(bot);
+					hasBall = true;
 					unExpire();
 					if (halted) continue;
 					
@@ -108,7 +110,14 @@ public class Task {
 				{
 				Point target = bot.getVision().visionPoint();
 				router.follow(router.create(target));
-				Thread.sleep(1000);
+				
+				Thread.sleep(1500);
+				while (bot.getVision().needsVision())
+				{
+					bot.getNav().rotate(15);
+					Thread.sleep(1500);
+				}
+				
 				nextState = continuationState;
 				}
 				catch (InterruptedException e)
@@ -124,7 +133,16 @@ public class Task {
 			{
 				taskActive = false;
 				bot.getGrip().release();
-				overlord.abortTask(this);
+				
+				if (bot.getVision().needsVision())
+				{
+					continuationState = TaskState.ABANDONED;
+					nextState = TaskState.VISION;
+				}
+				else
+				{
+					overlord.abortTask(this);
+				}
 			}
 			else if (state == TaskState.DELAYED)
 			{
@@ -163,7 +181,7 @@ public class Task {
 	
 	public boolean hasBall()
 	{
-		return state == TaskState.RETURNING;
+		return hasBall;
 	}
 	
 	private boolean halted = false;
@@ -198,7 +216,7 @@ public class Task {
 	}
 
 	private long firstExpired = 0;
-	private static final long expiryAllowance = 10 * 1000;
+	private static final long expiryAllowance = 20 * 1000;
 	
 	public void unExpire()
 	{

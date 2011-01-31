@@ -1,13 +1,12 @@
 package orchestration;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import orchestration.goal.Goal;
@@ -25,11 +24,10 @@ public class TaskOverlord {
 	private ReadWriteLock rwLock = new ReentrantReadWriteLock();
 	private Lock readLock = rwLock.readLock();
 	private Lock writeLock = rwLock.writeLock();
-	
-	private List<Task> tasks = new ArrayList<Task>(20);
-	private List<Ball> freeBalls = new ArrayList<Ball>(20);
-	private List<Ball> activeBalls = new ArrayList<Ball>(20);
-	private List<Goal> goals = new ArrayList<Goal>(20);
+	private Lock taskLock = new ReentrantLock();
+	private List<Task> tasks = new Vector<Task>();
+	private List<Ball> freeBalls = new Vector<Ball>();
+	private List<Goal> goals = new Vector<Goal>();
 	
 	private LordSupreme parent;
 	
@@ -40,9 +38,27 @@ public class TaskOverlord {
 		parent.lcm.subscribe("BALL", new BallSubscriber());
 	}
 	
-	public synchronized Task requestDuty(Avatar soldier)
+	public Task requestDuty(Avatar soldier)
 	{
-		while (freeBalls.size() == 0) Thread.yield();
+		System.out.println(soldier.getName() + " is waiting on a task.");
+		
+		while (freeBalls.isEmpty())
+		{
+			try
+			{
+				Thread.sleep(500);
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+				return null;
+			}
+		}
+		taskLock.lock();		
+		System.out.print(tasks.size() + " active tasks. ");
+		System.out.println(freeBalls.size() + " free balls. ");
+		
+		
 
 		Point avatarLoc = soldier.location();
 		
@@ -53,6 +69,7 @@ public class TaskOverlord {
 		Task newTask = new Task(this, parent.planner, soldier, nearestBall, nearestGoal);
 		takeBall(nearestBall);
 		tasks.add(newTask);
+		taskLock.unlock();
 		
 		return newTask;
 	}
@@ -61,14 +78,6 @@ public class TaskOverlord {
 	{
 		writeLock.lock();
 			freeBalls.remove(ball);
-			activeBalls.add(ball);
-		writeLock.unlock();
-	}
-	
-	public void freeBall(Ball ball)
-	{
-		writeLock.lock();
-			activeBalls.remove(ball);
 		writeLock.unlock();
 	}
 	
@@ -96,7 +105,7 @@ public class TaskOverlord {
 	{
 		readLock.lock();
 			Point nearestBallLoc = ball.getLocation();
-			List<Goal> suitableGoals = new ArrayList<Goal>();
+			List<Goal> suitableGoals = new Vector<Goal>();
 			
 			while (suitableGoals.size() == 0)
 			{
@@ -150,11 +159,16 @@ public class TaskOverlord {
 	
 	public void ballsUpdate(List<Ball> detectedBalls)
 	{
-		writeLock.lock();
-		freeBalls.clear();
 		
 		// Any ball detected and not active is a safe candidate for future tasks
-		ArrayList<Ball> detectedAndFree = new ArrayList<Ball>(20);
+		List<Ball> detectedAndFree = new Vector<Ball>();
+		List<Ball> activeBalls = new Vector<Ball>();
+		
+		taskLock.lock();
+		readLock.lock();
+		for (Task task : tasks)
+			activeBalls.add(task.getBall());
+		
 		for (Ball incoming : detectedBalls)
 		{
 			Point incomingLoc = incoming.getLocation();
@@ -163,14 +177,20 @@ public class TaskOverlord {
 				detectedAndFree.add(incoming);
 			}
 		}
-		
-		freeBalls = detectedAndFree;
+		readLock.unlock();
+
+		writeLock.lock();
+		freeBalls.clear();
+		freeBalls.addAll(detectedAndFree);
+		writeLock.unlock();
 		
 		// Any ball not detected but active (without being gripped) is problematic. 
 		// It's possible it was just obscured by the robot picking it up though, so
 		// give it a very generous time limit to get it's act together
 		
-		ArrayList<Task> expiredTasks = new ArrayList<Task>(20);
+		List<Task> expiredTasks = new Vector<Task>();
+		
+		readLock.lock();
 		for (Task task : tasks)
 		{
 			if (task.hasBall()) continue;
@@ -190,6 +210,7 @@ public class TaskOverlord {
 			
 			if (!foundMatch) expiredTasks.add(task);
 		}
+		readLock.unlock();
 		
 		// Need to process expirations from a separate collection, as the
 		// invocation can cause it's removal from the task list..
@@ -197,10 +218,7 @@ public class TaskOverlord {
 		{
 			task.attemptExpire();
 		}
-		
-		//System.out.println(tasks.size() + " active tasks");
-		//System.out.println(freeBalls.size() + " free balls. ");
-		writeLock.unlock();
+		taskLock.unlock();
 	}
 	
 	private static final float threshold = 10f;
@@ -242,7 +260,6 @@ public class TaskOverlord {
 		writeLock.lock();
 			if (tasks.contains(task))
 			{
-				freeBall(task.getBall());
 				tasks.remove(task);
 			}
 			
@@ -255,9 +272,10 @@ public class TaskOverlord {
 		writeLock.lock();
 			if (tasks.contains(task))
 			{
-				freeBall(task.getBall());
 				tasks.remove(task);
 			}
+			
+		System.out.println("Completed task!: " + task);
 		writeLock.unlock();
 	}
 	
@@ -275,9 +293,14 @@ public class TaskOverlord {
 		
 	}
 	
+	public static final long updateRate = 1 * 1000;
+	private long lastUpdate = 0;
+	
 	String firstSource = null;
 	private class BallSubscriber implements LCMSubscriber
 	{
+		private Lock messageLock = new ReentrantLock();
+		
 	   public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins)
 	   {
 		   balls_t detected = null;
@@ -293,25 +316,38 @@ public class TaskOverlord {
 
 		   // Just writing code to handle one source for now. 
 		   // I'll make it multi source compliant later.
-		   if (firstSource == null) firstSource = detected.info.source;
+		   if (firstSource == null)
+			   {
+			   firstSource = detected.info.source;
+			   System.out.println("Using " + firstSource + " as sole ball source.");
+			   }
 		   else if (!detected.info.source.equals(firstSource))
 		   {
 			   return;
 		   }
 		   
-		   List<ball_t> orderedBalls = Arrays.asList(detected.balls);
-		   Collections.sort(orderedBalls, new BallOrderingComparator());
-		   
-		   ArrayList<Ball> javinatedBalls = new ArrayList<Ball>(20);
-		   for (ball_t ball : orderedBalls)
-		   {
-			   Ball javaBall = new Ball(
-					   new Point((float)ball.position[0], (float)ball.position[1]),
-					   BallColor.values()[ball.colour]);
-			   javinatedBalls.add(javaBall);
+		   // Only update every [updateRate] seconds
+		   long now = System.currentTimeMillis();
+		   if (now - lastUpdate > updateRate)
+			   {
+			   boolean locked = messageLock.tryLock();
+			   if (!locked) return;
+			   
+			   lastUpdate = now;
+			   
+			   List<Ball> javinatedBalls = new Vector<Ball>();
+			   for (ball_t ball : detected.balls)
+			   {
+				   Ball javaBall = new Ball(
+						   new Point((float)ball.position[0], (float)ball.position[1]),
+						   BallColor.values()[ball.colour]);
+				   javinatedBalls.add(javaBall);
+			   }
+			   
+			   System.out.println(javinatedBalls.size() + " balls detected.");
+			   ballsUpdate(javinatedBalls);
+			   messageLock.unlock();
 		   }
-		   
-		   ballsUpdate(javinatedBalls);
 	   }
 	}
 }
