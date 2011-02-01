@@ -194,7 +194,7 @@ public float getAngle()
  * sets the robot pose
  * @param pose new pose
  */
-  public synchronized void setPose(Pose pose)
+  public void setPose(Pose pose)
   {
 	pilotLock.lock();
 	updateLock.lock();

@@ -21,10 +21,11 @@ import lcmtypes.ball_t;
 import lejos.geom.Point;
 
 public class TaskOverlord {
-	private ReadWriteLock rwLock = new ReentrantReadWriteLock();
-	private Lock readLock = rwLock.readLock();
-	private Lock writeLock = rwLock.writeLock();
-	private Lock taskLock = new ReentrantLock();
+	private Lock supplicantLock = new ReentrantLock();
+	private List<Avatar> supplicants = new Vector<Avatar>();
+	private Lock compTaskLock = new ReentrantLock();
+	private List<Task> completedTasks = new Vector<Task>();
+	
 	private List<Task> tasks = new Vector<Task>();
 	private List<Ball> freeBalls = new Vector<Ball>();
 	private List<Goal> goals = new Vector<Goal>();
@@ -38,27 +39,22 @@ public class TaskOverlord {
 		parent.lcm.subscribe("BALL", new BallSubscriber());
 	}
 	
-	public Task requestDuty(Avatar soldier)
+	public void requestDuty(Avatar soldier)
 	{
-		System.out.println(soldier.getName() + " is waiting on a task.");
-		
-		while (freeBalls.isEmpty())
-		{
-			try
-			{
-				Thread.sleep(500);
-			}
-			catch (InterruptedException e)
-			{
-				e.printStackTrace();
-				return null;
-			}
-		}
-		taskLock.lock();		
+		System.out.println(soldier.getName() + " is waiting for a task.");
 		System.out.print(tasks.size() + " active tasks. ");
 		System.out.println(freeBalls.size() + " free balls. ");
 		
-		
+		supplicantLock.lock();
+		supplicants.add(soldier);
+		supplicantLock.unlock();
+	}
+	
+	public Task createDuty(Avatar soldier)
+	{
+		System.out.println(soldier.getName() + " is receiving a task.");
+		System.out.print(tasks.size() + " active tasks. ");
+		System.out.println(freeBalls.size() + " free balls. ");
 
 		Point avatarLoc = soldier.location();
 		
@@ -69,21 +65,20 @@ public class TaskOverlord {
 		Task newTask = new Task(this, parent.planner, soldier, nearestBall, nearestGoal);
 		takeBall(nearestBall);
 		tasks.add(newTask);
-		taskLock.unlock();
 		
 		return newTask;
 	}
 	
 	public void takeBall(Ball ball)
 	{
-		writeLock.lock();
+		
 			freeBalls.remove(ball);
-		writeLock.unlock();
+		
 	}
 	
 	public Ball findNearestBall(Point avatarLoc)
 	{
-		readLock.lock();
+		
 			if (freeBalls.size() == 0) return null; // DANGER
 			
 			Ball nearestBall = freeBalls.get(0);
@@ -96,14 +91,14 @@ public class TaskOverlord {
 					nearestBall = ball;
 				}
 			}
-		readLock.unlock();
+		
 		
 		return nearestBall;
 	}
 	
 	public Goal findBestGoal(Point avatarLoc, Ball ball)
 	{
-		readLock.lock();
+		
 			Point nearestBallLoc = ball.getLocation();
 			List<Goal> suitableGoals = new Vector<Goal>();
 			
@@ -130,42 +125,48 @@ public class TaskOverlord {
 					nearestGoal = goal;
 				}
 			}
-		readLock.unlock();
+		
 		
 		return nearestGoal;
 	}
 	
 	public void announceGoal(Goal goal)
-	{	writeLock.lock();
+	{	
 			goals.add(goal);
-		writeLock.unlock();
+		
 	}
 	
 	public Goal getGoal(String id)
 	{
-		readLock.lock();
+		
 			for(Goal goal : goals)
 			{
 				if (goal.id().equals(id))
 				{
-					readLock.unlock();
+					
 					return goal;
 				}
 			}
 		
-		readLock.unlock();
+		
 		return null;
 	}
 	
 	public void ballsUpdate(List<Ball> detectedBalls)
 	{
+		compTaskLock.lock();
+		for (Task task : completedTasks)
+		{
+			tasks.remove(task);
+		}
+		completedTasks.clear();
+		compTaskLock.unlock();
 		
 		// Any ball detected and not active is a safe candidate for future tasks
 		List<Ball> detectedAndFree = new Vector<Ball>();
 		List<Ball> activeBalls = new Vector<Ball>();
 		
-		taskLock.lock();
-		readLock.lock();
+		
 		for (Task task : tasks)
 			activeBalls.add(task.getBall());
 		
@@ -177,12 +178,12 @@ public class TaskOverlord {
 				detectedAndFree.add(incoming);
 			}
 		}
-		readLock.unlock();
+		
 
-		writeLock.lock();
+		
 		freeBalls.clear();
 		freeBalls.addAll(detectedAndFree);
-		writeLock.unlock();
+		
 		
 		// Any ball not detected but active (without being gripped) is problematic. 
 		// It's possible it was just obscured by the robot picking it up though, so
@@ -190,7 +191,7 @@ public class TaskOverlord {
 		
 		List<Task> expiredTasks = new Vector<Task>();
 		
-		readLock.lock();
+		
 		for (Task task : tasks)
 		{
 			if (task.hasBall()) continue;
@@ -210,7 +211,7 @@ public class TaskOverlord {
 			
 			if (!foundMatch) expiredTasks.add(task);
 		}
-		readLock.unlock();
+		
 		
 		// Need to process expirations from a separate collection, as the
 		// invocation can cause it's removal from the task list..
@@ -218,7 +219,23 @@ public class TaskOverlord {
 		{
 			task.attemptExpire();
 		}
-		taskLock.unlock();
+		
+		supplicantLock.lock();
+		List<Avatar> unassigned = new Vector<Avatar>();
+		for (Avatar avatar : supplicants)
+		{
+			if (freeBalls.size() > 0)
+			{
+				avatar.assignTask(createDuty(avatar));
+			}
+			else
+			{
+				unassigned.add(avatar);
+			}
+		}
+		supplicants.clear();
+		supplicants.addAll(unassigned);
+		supplicantLock.unlock();
 	}
 	
 	private static final float threshold = 10f;
@@ -240,43 +257,37 @@ public class TaskOverlord {
 	
 	public Ball getBall(List<Ball> balls, float x, float y)
 	{
-		readLock.lock();
+		
 			Point loc = new Point(x, y);
 			for (Ball ball : balls)
 			{
 				if (areLocationsClose(ball.getLocation(), loc))
 				{
-					readLock.unlock();
+					
 					return ball;
 				}
 			}
-		readLock.unlock();
+		
 		
 		return null;
 	}
 
 	public void abortTask(Task task)
 	{
-		writeLock.lock();
-			if (tasks.contains(task))
-			{
-				tasks.remove(task);
-			}
-			
-			System.out.println("Aborted task!: " + task);
-		writeLock.unlock();
+		compTaskLock.lock();
+		completedTasks.add(task);
+		compTaskLock.unlock();
+		System.out.println("Aborted task!: " + task);
+		
 	}
 
 	public void completeTask(Task task)
 	{
-		writeLock.lock();
-			if (tasks.contains(task))
-			{
-				tasks.remove(task);
-			}
-			
+		compTaskLock.lock();
+		completedTasks.add(task);
+		compTaskLock.unlock();
 		System.out.println("Completed task!: " + task);
-		writeLock.unlock();
+		
 	}
 	
 	// Arranges balls so that oldest is first

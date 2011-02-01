@@ -28,7 +28,7 @@ public class Avatar implements Runnable, Plannable {
 	private CubeSubscriber cubeSubscriber = null;
 	private long lastVision = 0;
 	private final int acceptableReckoningTime = 20 * 1000;
-	private final int updateFreq = 5 * 1000;
+	private final int updateFreq = 1 * 1000;
 	
 	private Point visionZone = new Point(500, 400);
 	private boolean isActive = false;
@@ -72,16 +72,24 @@ public class Avatar implements Runnable, Plannable {
 		
 		while (connectionUp)
 		{
-			task = overlord.requestDuty(this);
+			overlord.requestDuty(this);
+			
+			while (task == null) Thread.yield();
 			task.assignBot(bot);
 			
 			System.out.println(getName() + " is taking task: " + task.toString());
 			task.fulfil();
+			task = null;
 		}
 		
 		isActive = false;
 		parent.removeFromDuty(this);
 		bot.finished();
+	}
+	
+	public void assignTask(Task assignment)
+	{
+		this.task = assignment;
 	}
 	
 	public String getName()
