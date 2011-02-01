@@ -45,7 +45,6 @@ public class BetterNavigator {
 	private ReadWriteLock poseLock = new ReentrantReadWriteLock();
 	private Lock poseRead = poseLock.readLock();
 	private Lock poseWrite = poseLock.writeLock();
-	private Lock pilotLock = new ReentrantLock();
     /**
      * Allocates a BetterNavigator with a Pilot that you supply.
      * @param  pilot can be  any class that implements the pilot interface
@@ -196,21 +195,12 @@ public float getAngle()
  */
   public void setPose(Pose pose)
   {
-	pilotLock.lock();
 	updateLock.lock();
-	poseWrite.lock();
-
-	pilot.stop();
-    pilot.reset();
-    
-    _pose = pose;
-    _estimatedPose = copyPose(pose);
-    _distance0 = 0;
-    _angle0 = 0;
-    
-    poseWrite.unlock();
+		poseWrite.lock();
+		    _pose = pose;
+		    _estimatedPose = copyPose(pose);
+	    poseWrite.unlock();
     updateLock.unlock();
-    pilotLock.unlock();
     
   }
   
@@ -224,10 +214,8 @@ public float getAngle()
  */
   public void setMoveSpeed(float speed)
   {
-	boolean locked = pilotLock.tryLock();
-	if (!locked) return;
     pilot.setMoveSpeed(speed);
-    pilotLock.unlock();
+    
   }
 /**
  * sets the robot turn speed  -degrees/second
@@ -235,10 +223,8 @@ public float getAngle()
  */
   public void setTurnSpeed(float speed)
   {
-		boolean locked = pilotLock.tryLock();
-		if (!locked) return;
     pilot.setTurnSpeed(speed);
-    pilotLock.unlock();
+    
   }
 /**
  * Stops the robot. Depending on the robot speed, it travels a bit before actually
@@ -246,9 +232,9 @@ public float getAngle()
  */
   public void stop()
   {
-	pilotLock.lock();
+	
     pilot.stop();
-    pilotLock.unlock();
+    
     updatePose();
   }
 /**
@@ -281,7 +267,7 @@ public float getAngle()
     updatePose();
         
 
-    pilotLock.lock();
+    
     pilot.travel(distance, true);
     if (immediateReturn)
     	{
@@ -297,7 +283,7 @@ public float getAngle()
     	}
     	Thread.yield();
     }
-    pilotLock.unlock();
+    
   }
 
   /**
@@ -320,9 +306,8 @@ public float getAngle()
     int turnAngle = Math.round(angle);
     updatePose();
       
-	pilotLock.lock();
+	
     pilot.rotate(turnAngle, immediateReturn);
-    if (!immediateReturn) pilotLock.unlock();
   }
 
   /**
@@ -344,7 +329,7 @@ public float getAngle()
     	}
     	Thread.yield();
     }
-    pilotLock.unlock();
+    
     
     if (wasInterrupted)
     {
@@ -515,9 +500,9 @@ public float getAngle()
      * If negative, the left wheel is on the outside.
      */
     public void arc(float radius) {
-    	pilotLock.lock();
+    	
         pilot.arc(radius);
-        pilotLock.unlock();
+        
     }
 
     /**
@@ -531,7 +516,7 @@ public float getAngle()
      */
     public void arc(float radius, int angle) {
         arc(radius, angle, false);
-        pilotLock.unlock();
+        
     }
 
     /**
@@ -548,11 +533,11 @@ public float getAngle()
     public void arc(float radius, int angle, boolean immediateReturn) {
         updatePose();
         
-        pilotLock.lock();
+        
         pilot.arc(radius, angle, immediateReturn);
         if (!immediateReturn)
         {
-        	pilotLock.unlock();
+        	
         }
     }
     
@@ -569,7 +554,7 @@ public float getAngle()
      */
     public void travelArc(float radius, float distance){
       travelArc(radius,distance,false);
-      pilotLock.unlock();
+      
     }
     
     /**
@@ -585,12 +570,12 @@ public float getAngle()
     public void travelArc(float radius, float distance, boolean immediateReturn)
     {
       updatePose();
-      pilotLock.lock();
+      
       pilot.travelArc(radius, distance, immediateReturn);
       
       if (!immediateReturn)
       {
-    	  pilotLock.unlock();
+    	  
       }
     }
 
@@ -627,9 +612,9 @@ public float getAngle()
   {
     updatePose();
     
-    pilotLock.lock();
+    
     pilot.steer(turnRate);
-    pilotLock.unlock();
+    
   }
 
   /**
@@ -654,9 +639,9 @@ public float getAngle()
    */
   public void steer(int turnRate, int angle)
   {
-	pilotLock.lock();
+	
     pilot.steer(turnRate, angle, false);
-    pilotLock.unlock();
+    
   }
 /**
    * Moves the robot along a curved path for a specified angle of rotation. This method is similar to the
@@ -685,18 +670,12 @@ public float getAngle()
   {
     updatePose();
     
-    pilotLock.lock();
+    
     pilot.steer(turnRate, angle, immediateReturn);
     if (!immediateReturn)
     {
-    	pilotLock.unlock();
+    	
     }
-  }
-  
-  public void returnPilot()
-  {
-	pilotLock.tryLock();
-	pilotLock.unlock();  
   }
   
   public void softInterrupt()

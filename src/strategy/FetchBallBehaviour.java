@@ -31,7 +31,6 @@ public class FetchBallBehaviour implements BotStrategy{
 			Thread.yield();
 			if (Thread.interrupted()) throw new InterruptedException();
 		}
-		bot.getNav().returnPilot();
 		
 		float distance = bot.getNav().distanceTo(target.x, target.y)* 1.2f;
 		
@@ -50,7 +49,6 @@ public class FetchBallBehaviour implements BotStrategy{
 			Thread.yield();
 			if (Thread.interrupted()) throw new InterruptedException();
 		}	
-		bot.getNav().returnPilot();
 		bot.getNav().setMoveSpeed(bot.getConfig().operatingSpeed);
 	}
 }
