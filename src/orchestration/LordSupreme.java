@@ -10,6 +10,22 @@ import orchestration.task.TaskOverlord;
 
 import lcm.lcm.LCM;
 
+/**
+ * The LordSupreme serves as the central co-ordination point of the various
+ * major components that make up the system.
+ * 
+ * The major components being:
+ *  orchestration.Avatar
+ * 	orchesration.HotBotWatch
+ *  orchestration.task.TaskOverlord
+ *  orchestration.path.PathPlanner
+ *
+ * And in a more general capacity:
+ *  lcm.lcm.LCM
+ *  
+ * @author baxnick
+ *
+ */
 public class LordSupreme {
 	public List<Avatar> avatars = Collections.synchronizedList(new ArrayList<Avatar>(4));
 	public PathPlanner planner;

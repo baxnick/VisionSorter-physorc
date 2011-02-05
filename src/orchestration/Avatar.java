@@ -16,6 +16,15 @@ import lejos.geom.Point;
 import physical.GripperBot;
 import physical.comms.SimpleCallback;
 
+/**
+ * The Avatar class works in concert with the Task and strategy.* classes in
+ * order to control a robot. It runs within it's own thread, and is responsible
+ * only for it's particular underlying physical robot. There is one avatar
+ * spawned each time a new robot is detected.
+ * 
+ * @author baxnick
+ *
+ */
 public class Avatar implements Runnable, Plannable {
 	private LordSupreme parent;
 	private TaskOverlord overlord;
@@ -28,9 +37,10 @@ public class Avatar implements Runnable, Plannable {
 	private CubeSubscriber cubeSubscriber = null;
 	private long lastVision = 0;
 	private long lastMoving = 0;
-	private final int acceptableReckoningTime = 10 * 1000;
 	
-	private final int updateFreq = 3 * 1000;
+	private static final int acceptableReckoningTime = 10000; // ms
+	private static final int updateFreq = 3000; // ms
+	private static final long acceptableStillTime = 3500; // ms
 	
 	private Point visionZone = new Point(600, 900);
 	private boolean isActive = false;
@@ -72,8 +82,6 @@ public class Avatar implements Runnable, Plannable {
 		}
 		
 		isActive = true;
-		collisionThread = new Thread(new CollisionWatch());
-		//collisionThread.start();
 		
 		while (connectionUp)
 		{
@@ -135,7 +143,6 @@ public class Avatar implements Runnable, Plannable {
 		public void callback()
 		{
 			if (connectionUp == false) return;
-			// TODO Auto-generated method stub
 			System.err.println("Connection dropped, removing " + getName());
 			dropConn();
 		}
@@ -157,7 +164,18 @@ public class Avatar implements Runnable, Plannable {
 		return isActive;
 	}
 	
-	private static final long acceptableStillTime = 3500; //ms
+	/**
+	 * CubeSubscriber acts as the communication point for bot positioning. It
+	 * enforces the additional constraint that the bot has been still for so
+	 * many seconds, and a separate timing for updates.
+	 * 
+	 * It currently does not check the latency of the message, but this should
+	 * probably be checked at a later point, as a late message at the wrong time
+	 * could mess up the robot's positioning until the next update.
+	 * 
+	 * @author baxnick
+	 *
+	 */
 	private class CubeSubscriber implements LCMSubscriber
 	{
 		private Lock messageLock = new ReentrantLock();
@@ -203,47 +221,6 @@ public class Avatar implements Runnable, Plannable {
 	   }
 	}
 	
-	private class CollisionWatch implements Runnable
-	{
-		private float REALLY_CLOSE = 200.0f;
-		
-		public CollisionWatch()
-		{
-			REALLY_CLOSE = bot.safeDistance(0) * 1.2f;
-		}
-		
-		@Override
-		public void run()
-		{
-			while (connectionUp)
-			{
-				Point myLoc = location();
-				
-				for (Avatar otherBot : parent.avatars)
-				{
-					if (otherBot == Avatar.this) continue;
-					if (otherBot.isActive() == false) continue;
-					if (parent.priority(otherBot) < parent.priority(Avatar.this)) continue;
-					
-					if (otherBot.location().distance(myLoc) < REALLY_CLOSE)
-					{
-						if (task != null) task.halt();
-						while (!task.isHalted()) Thread.yield();
-						bot.getNav().stop();
-						
-						while (otherBot.location().distance(myLoc) < REALLY_CLOSE)
-						{
-							Thread.yield();
-						}
-
-						if (task != null) task.resume();
-					}
-				}
-				
-				Thread.yield();
-			}
-		}
-	}
 
 	@Override
 	public String getPlanningName()

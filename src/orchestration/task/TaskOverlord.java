@@ -19,12 +19,20 @@ import lcmtypes.balls_t;
 import lcmtypes.ball_t;
 import lejos.geom.Point;
 
+/**
+ * TaskOverlord monitors the positioning of balls and goals placed on the table,
+ * fulfilling requests by avatars by instantiating Task objects in response
+ * whenever new balls become available. 
+ * 
+ * @author baxnick
+ *
+ */
 public class TaskOverlord {
 	private Lock supplicantLock = new ReentrantLock();
-	private List<Avatar> supplicants = new Vector<Avatar>();
 	private Lock compTaskLock = new ReentrantLock();
-	private List<Task> completedTasks = new Vector<Task>();
 	
+	private List<Avatar> supplicants = new Vector<Avatar>();
+	private List<Task> completedTasks = new Vector<Task>();
 	private List<Task> tasks = new Vector<Task>();
 	private List<Ball> freeBalls = new Vector<Ball>();
 	private List<Goal> goals = new Vector<Goal>();
@@ -292,6 +300,10 @@ public class TaskOverlord {
 	public static final long updateRate = 1 * 1000;
 	private long lastUpdate = 0;
 	
+	/**
+	 * BallSubscriber is a receiving point for network communications related to
+	 * balls, and determines the pace of internal updates within the TaskOverlord.
+	 */
 	String firstSource = null;
 	private class BallSubscriber implements LCMSubscriber
 	{
