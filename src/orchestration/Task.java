@@ -65,7 +65,7 @@ public class Task {
 					unExpire();
 					if (halted) continue;
 					
-					if (bot.getVision().needsVision())
+					if (avatar.getVision().needsVision())
 					{
 						continuationState = TaskState.RETURNING;
 						nextState = TaskState.VISION;
@@ -93,7 +93,7 @@ public class Task {
 					goal.disengageStrategy(dropLoc).execute(bot);
 					if (halted) continue;
 					
-					if (bot.getVision().needsVision())
+					if (avatar.getVision().needsVision())
 					{
 						continuationState = TaskState.COMPLETED;
 						nextState = TaskState.VISION;
@@ -108,11 +108,11 @@ public class Task {
 			{
 				try
 				{
-				Point target = bot.getVision().visionPoint();
+				Point target = avatar.getVision().visionPoint();
 				router.follow(router.create(target));
 				
 				Thread.sleep(4000);
-				while (bot.getVision().needsVision())
+				while (avatar.getVision().needsVision())
 				{
 					bot.getNav().rotate(15);
 					Thread.sleep(4000);
@@ -134,7 +134,7 @@ public class Task {
 				taskActive = false;
 				bot.getGrip().release();
 				
-				if (bot.getVision().needsVision())
+				if (avatar.getVision().needsVision())
 				{
 					continuationState = TaskState.ABANDONED;
 					nextState = TaskState.VISION;

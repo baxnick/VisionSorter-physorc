@@ -1,6 +1,7 @@
 package physical;
 
 
+import orchestration.VisionQuery;
 import lejos.geom.Point;
 import lejos.nxt.remote.NXTCommand;
 
@@ -27,8 +28,4 @@ public interface GripperBot {
 	public abstract void notifyError();
 	
 	public abstract void setErrorHandler(SimpleCallback onConnectionError);
-
-	public abstract void setVisionQuery(VisionQuery visionSource);
-	
-	public abstract VisionQuery getVision();
 }

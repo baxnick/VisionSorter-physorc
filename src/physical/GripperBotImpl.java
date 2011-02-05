@@ -2,6 +2,8 @@ package physical;
 
 import java.io.IOException;
 
+import orchestration.VisionQuery;
+
 import lejos.geom.Point;
 import lejos.nxt.remote.*;
 import lejos.pc.comm.NXTComm;
@@ -21,7 +23,6 @@ public class GripperBotImpl implements GripperBot {
 	private SimpleCallback errorCallback = null;
 	private boolean isConnected = true;
 	private FaultFilter connectionFilter;
-	private VisionQuery vision;
 	
 	public static GripperBot standardGripper(String name, NXTComm comms) throws IOException, NXTCommException
 	{
@@ -204,18 +205,6 @@ public class GripperBotImpl implements GripperBot {
 			if (connectionFilter.isFaulted()) connectionErrored();
 		}
 		
-	}
-
-	@Override
-	public void setVisionQuery(VisionQuery visionSource)
-	{
-		vision = visionSource;
-	}
-
-	@Override
-	public VisionQuery getVision()
-	{
-		return vision;
 	}
 
 	@Override

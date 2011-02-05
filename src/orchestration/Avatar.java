@@ -15,7 +15,6 @@ import lejos.geom.Point;
 import lejos.pc.comm.NXTInfo;
 import physical.SimpleCallback;
 import physical.GripperBot;
-import physical.VisionQuery;
 
 public class Avatar implements Runnable, Plannable {
 	private LordSupreme parent;
@@ -25,6 +24,7 @@ public class Avatar implements Runnable, Plannable {
 	private String name;
 	private Thread myThread;
 	private Thread collisionThread;
+	private VisionQuery vision;
 	private CubeSubscriber cubeSubscriber = null;
 	private long lastVision = 0;
 	private long lastMoving = 0;
@@ -43,7 +43,7 @@ public class Avatar implements Runnable, Plannable {
 		this.parent = parent;
 		this.overlord = parent.getOverlord();
 		this.bot = bot;
-		bot.setVisionQuery(new BotVisionSource());
+		this.vision = new BotVisionSource();
 		bot.setErrorHandler(new OnConnectionError());
 		this.name = bot.getConfig().getName();
 
@@ -139,6 +139,11 @@ public class Avatar implements Runnable, Plannable {
 		
 	}
 
+	public VisionQuery getVision()
+	{
+		return vision;
+	}
+	
 	public Point location()
 	{
 		return bot.location();
