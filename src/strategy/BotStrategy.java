@@ -2,7 +2,6 @@ package strategy;
 
 import physical.GripperBot;
 
-public interface BotStrategy<T> {
-	public void reconfigure(T config);
+public interface BotStrategy {
 	public void execute(GripperBot bot) throws InterruptedException;
 }

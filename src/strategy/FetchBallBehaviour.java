@@ -2,12 +2,12 @@ package strategy;
 
 import physical.BetterNavigator;
 import physical.GripperBot;
-import physical.Helper;
 import lejos.geom.Point;
 import lejos.robotics.Pose;
 
 
-public class FetchBallBehaviour implements BotStrategy<FetchBallConfig>{
+public class FetchBallBehaviour implements BotStrategy
+{
 	private FetchBallConfig cfg = new FetchBallConfig();
 	
 	private Point target;
@@ -70,7 +70,6 @@ public class FetchBallBehaviour implements BotStrategy<FetchBallConfig>{
 		botNav.setTurnSpeed(bot.getConfig().rotationSpeed);
 	}
 
-	@Override
 	public void reconfigure(FetchBallConfig config)
 	{
 		this.cfg = config;

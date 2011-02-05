@@ -1,8 +1,5 @@
 package physical;
 
-import lejos.nxt.remote.RemoteMotor;
-
-
 public class OverheadGripperConfig {
 	public boolean reverseDirection;
 	public float operatingSpeedMulti;

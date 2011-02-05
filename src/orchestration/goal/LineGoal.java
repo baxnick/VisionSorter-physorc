@@ -6,7 +6,6 @@ import orchestration.object.Ball;
 import orchestration.object.BallColor;
 
 
-import physical.GripperBot;
 import strategy.ApproachGoalBehaviour;
 import strategy.BotStrategy;
 import strategy.DisengageGoalBehaviour;
@@ -14,7 +13,6 @@ import strategy.DisengageGoalBehaviour;
 
 import lejos.geom.Line;
 import lejos.geom.Point;
-import lejos.robotics.Pose;
 
 
 public class LineGoal implements Goal {

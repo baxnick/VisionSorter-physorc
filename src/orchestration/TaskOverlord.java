@@ -1,13 +1,10 @@
 package orchestration;
 
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import orchestration.goal.Goal;
 import orchestration.object.Ball;
@@ -287,20 +284,6 @@ public class TaskOverlord {
 		completedTasks.add(task);
 		compTaskLock.unlock();
 		System.out.println("Completed task!: " + task);
-		
-	}
-	
-	// Arranges balls so that oldest is first
-	// Utterly useless at the moment now that I think of it....
-	private class BallOrderingComparator implements Comparator<ball_t>
-	{
-		@Override
-		public int compare(ball_t b1, ball_t b2)
-		{
-			if (b1.age < b2.age) return 1;
-			else if (b1.age == b2.age) return 0;
-			else return -1;
-		}
 		
 	}
 	

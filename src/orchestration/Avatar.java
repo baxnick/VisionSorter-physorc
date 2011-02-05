@@ -1,7 +1,6 @@
 package orchestration;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -12,9 +11,8 @@ import orchestration.path.RectShape;
 import lcm.lcm.*;
 import lcmtypes.cube_t;
 import lejos.geom.Point;
-import lejos.pc.comm.NXTInfo;
-import physical.SimpleCallback;
 import physical.GripperBot;
+import physical.comms.SimpleCallback;
 
 public class Avatar implements Runnable, Plannable {
 	private LordSupreme parent;
@@ -46,11 +44,14 @@ public class Avatar implements Runnable, Plannable {
 		this.vision = new BotVisionSource();
 		bot.setErrorHandler(new OnConnectionError());
 		this.name = bot.getConfig().getName();
+	}
 
+	public void start()
+	{
 		myThread = new Thread(this);
 		myThread.start();
 	}
-
+	
 	public boolean needsVision()
 	{
 		return lastVision < System.currentTimeMillis() - acceptableReckoningTime;
@@ -258,5 +259,12 @@ public class Avatar implements Runnable, Plannable {
 				bot.getConfig().trackWidth, 
 				bot.getConfig().gripDisplacement + bot.getConfig().rearDisplacement, 
 				location, heading);
+	}
+
+	public static Avatar spawn(LordSupreme lord, GripperBot recruitBot)
+	{
+		Avatar newbie = new Avatar(lord, recruitBot);
+		newbie.start();
+		return newbie;
 	}
 }

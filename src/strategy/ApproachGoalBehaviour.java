@@ -3,7 +3,7 @@ package strategy;
 import physical.GripperBot;
 import lejos.geom.Point;
 
-public class ApproachGoalBehaviour implements BotStrategy<ApproachGoalConfig> {
+public class ApproachGoalBehaviour implements BotStrategy {
 	private ApproachGoalConfig cfg = new ApproachGoalConfig();
 	private Point goalLocation;
 	private float preferredHeading;
@@ -24,7 +24,6 @@ public class ApproachGoalBehaviour implements BotStrategy<ApproachGoalConfig> {
 		bot.getNav().setMoveSpeed(bot.getConfig().operatingSpeed);
 	}
 
-	@Override
 	public void reconfigure(ApproachGoalConfig config)
 	{
 		this.cfg = config;

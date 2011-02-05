@@ -1,7 +1,7 @@
 package physical;
 
 
-import orchestration.VisionQuery;
+import physical.comms.SimpleCallback;
 import lejos.geom.Point;
 import lejos.nxt.remote.NXTCommand;
 

@@ -2,7 +2,8 @@ package physical;
 
 import java.io.IOException;
 
-import orchestration.VisionQuery;
+import physical.comms.FaultFilter;
+import physical.comms.SimpleCallback;
 
 import lejos.geom.Point;
 import lejos.nxt.remote.*;
@@ -76,16 +77,6 @@ public class GripperBotImpl implements GripperBot {
 	public void recalibrate()
 	{
 		getGrip().calibrate();
-		
-		/*
-		Helper.PauseBeeper(this, 0);
-		nav.setPose(
-				new Pose(
-						config.trackWidth / 2 + config.calibrationOffX, 
-						config.rearDisplacement + config.calibrationOffY, 
-						90));
-		nav.updatePose();
-		*/
 	}
 	
 	/* (non-Javadoc)

@@ -47,7 +47,7 @@ public class HotBotWatch implements Runnable {
 							recruitComm.open(match);
 							GripperBot recruitBot = GripperBotImpl
 									.standardGripper(match.name, recruitComm);
-							Avatar newRecruit = new Avatar(parent, recruitBot);
+							Avatar.spawn(parent, recruitBot);
 						}
 					}
 					catch (NXTCommException e)
