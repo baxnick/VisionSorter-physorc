@@ -7,24 +7,23 @@ import lejos.geom.Point;
 import lejos.robotics.Pose;
 
 
-public class FetchBallBehaviour implements BotStrategy{
-	private Point target;
+public class FetchBallBehaviour implements BotStrategy<FetchBallConfig>{
+	private FetchBallConfig cfg = new FetchBallConfig();
 	
-	private final float APPROACH_SPEED = 50.0f; // speed in mm/s
-	private final float TURN_SPEED = 20.0f; // speed in deg/s
-	private final int PREEMPTIVE_GRIP_TIME = 1000;
+	private Point target;
 	
 	public FetchBallBehaviour(Point target)
 	{
 		this.target = target;
 	}
 	
-	private static final float headingError = 1.5f;
 	public void execute(GripperBot bot) throws InterruptedException
 	{
 		BetterNavigator botNav = bot.getNav();
-		botNav.setMoveSpeed(APPROACH_SPEED);
-		botNav.setTurnSpeed(TURN_SPEED);
+		float operatingSpeed = bot.getConfig().operatingSpeed * cfg.moveSpeedFactor;
+		float rotationSpeed = bot.getConfig().rotationSpeed * cfg.turnSpeedFactor;
+		botNav.setMoveSpeed(operatingSpeed);
+		botNav.setTurnSpeed(rotationSpeed);
 		
 		botNav.stop();
 		
@@ -47,14 +46,14 @@ public class FetchBallBehaviour implements BotStrategy{
 			botPose = botNav.getPose();
 			System.out.println("(POST) " + bot.getConfig().getName() + " @ " + botPose.getX() + ", " + botPose.getY() +
 					" FETCHING ball @ " + target.x + ", " + target.y + " mh: " + botPose.getHeading());
-		} while (Math.abs(botPose.getHeading() - ballHeading) > headingError);
+		} while (Math.abs(botPose.getHeading() - ballHeading) > cfg.allowedHeadingError);
 		
 		float distance = botNav.distanceTo(target.x, target.y)* 1.2f;
 		
 		botNav.travel(distance, true);
 		
 		try {
-			Thread.sleep((int)Math.max(0, (int)(1000. * distance / APPROACH_SPEED) - PREEMPTIVE_GRIP_TIME));
+			Thread.sleep((int)Math.max(0, (int)(1000. * distance / operatingSpeed) - cfg.overshoot));
 		} catch (InterruptedException e) {
 			return;
 		}
@@ -66,6 +65,14 @@ public class FetchBallBehaviour implements BotStrategy{
 			Thread.yield();
 			if (Thread.interrupted()) throw new InterruptedException();
 		}	
+		
 		botNav.setMoveSpeed(bot.getConfig().operatingSpeed);
+		botNav.setTurnSpeed(bot.getConfig().rotationSpeed);
+	}
+
+	@Override
+	public void reconfigure(FetchBallConfig config)
+	{
+		this.cfg = config;
 	}
 }

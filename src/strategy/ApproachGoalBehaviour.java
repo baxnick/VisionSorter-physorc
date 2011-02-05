@@ -3,8 +3,8 @@ package strategy;
 import physical.GripperBot;
 import lejos.geom.Point;
 
-public class ApproachGoalBehaviour implements BotStrategy {
-	private static final int APPROACH_SPEED = 100;
+public class ApproachGoalBehaviour implements BotStrategy<ApproachGoalConfig> {
+	private ApproachGoalConfig cfg = new ApproachGoalConfig();
 	private Point goalLocation;
 	private float preferredHeading;
 	
@@ -16,11 +16,17 @@ public class ApproachGoalBehaviour implements BotStrategy {
 	
 	public void execute(GripperBot bot) throws InterruptedException
 	{			
-		bot.getNav().setMoveSpeed(APPROACH_SPEED);
+		bot.getNav().setMoveSpeed(bot.getConfig().operatingSpeed * cfg.speedFactor);
 		bot.getNav().stop();
 		bot.getNav().goTo(goalLocation.x, goalLocation.y);
 		bot.getNav().rotateTo(preferredHeading);
 		bot.getGrip().release();
 		bot.getNav().setMoveSpeed(bot.getConfig().operatingSpeed);
+	}
+
+	@Override
+	public void reconfigure(ApproachGoalConfig config)
+	{
+		this.cfg = config;
 	}
 }
