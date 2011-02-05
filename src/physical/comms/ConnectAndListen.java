@@ -1,4 +1,4 @@
-package physical;
+package physical.comms;
 
 public class ConnectAndListen {
 

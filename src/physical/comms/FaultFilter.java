@@ -1,10 +1,22 @@
-package physical;
+package physical.comms;
 
 import java.io.IOException;
 
 import lejos.nxt.remote.NXTCommRequest;
 import lejos.nxt.remote.NXTProtocol;
 
+/**
+ * The lejos suite really provides no centralised way to monitor the state of
+ * a connection. By passing a FaultFilter wrapping a NXTCommRequest, you can
+ * desginate a callback to be called the moment an error occurs in the connection.
+ * 
+ * It will throw an exception if a call was made to a faulted connection. It will
+ * also pass on the pre-existing exception after calling the callback when a
+ * fault first occurs.
+ * 
+ * @author baxnick
+ *
+ */
 public class FaultFilter implements NXTCommRequest, NXTProtocol
 {
 	private NXTCommRequest forwardee;

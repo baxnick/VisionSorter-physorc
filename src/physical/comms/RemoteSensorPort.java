@@ -1,6 +1,5 @@
-package physical;
+package physical.comms;
 
-import lejos.pc.comm.*;
 import lejos.nxt.I2CPort;
 import lejos.nxt.LegacySensorPort;
 import lejos.nxt.remote.*;
@@ -10,7 +9,8 @@ import java.io.*;
  * Port class. Contains 4 Port instances.<br>
  * Usage: Port.S4.readValue();
  * 
- * This version of the SensorPort class supports remote execution.
+ * With modifications by Ben Axnick to allow specification of the port within
+ * the constructor/instance rather than being statically defined. 
  * 
  * @author <a href="mailto:bbagnall@mts.net">Brian Bagnall</a>
  *

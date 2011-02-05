@@ -1,4 +1,4 @@
-package physical;
+package orchestration;
 
 import lejos.geom.Point;
 
