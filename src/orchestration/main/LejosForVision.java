@@ -1,5 +1,6 @@
-package orchestration;
+package orchestration.main;
 
+import orchestration.LordSupreme;
 import orchestration.goal.Goal;
 import orchestration.goal.LineGoal;
 import orchestration.object.BallColor;
@@ -7,7 +8,7 @@ import orchestration.object.BallColor;
 
 import lejos.geom.Line;
 
-public class MultiRemote {
+public class LejosForVision {
 	public static void main(String[] args)
 	{
 		try
