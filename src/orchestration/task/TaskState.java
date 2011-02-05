@@ -1,4 +1,4 @@
-package orchestration;
+package orchestration.task;
 
 public enum TaskState
 {

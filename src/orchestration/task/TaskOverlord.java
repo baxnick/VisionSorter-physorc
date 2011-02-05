@@ -1,4 +1,4 @@
-package orchestration;
+package orchestration.task;
 
 import java.io.IOException;
 import java.util.List;
@@ -6,6 +6,8 @@ import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import orchestration.Avatar;
+import orchestration.LordSupreme;
 import orchestration.goal.Goal;
 import orchestration.object.Ball;
 import orchestration.object.BallColor;

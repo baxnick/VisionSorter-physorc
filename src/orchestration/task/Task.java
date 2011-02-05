@@ -1,5 +1,6 @@
-package orchestration;
+package orchestration.task;
 
+import orchestration.Avatar;
 import orchestration.goal.Goal;
 import orchestration.object.Ball;
 import orchestration.object.BotLocationProvider;

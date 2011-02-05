@@ -7,6 +7,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import orchestration.path.Plannable;
 import orchestration.path.PlannerShape;
 import orchestration.path.RectShape;
+import orchestration.task.Task;
+import orchestration.task.TaskOverlord;
 
 import lcm.lcm.*;
 import lcmtypes.cube_t;
