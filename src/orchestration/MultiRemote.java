@@ -20,8 +20,8 @@ public class MultiRemote {
 		{
 			Goal southGoal = new LineGoal("SG", BallColor.BLUE, new Line(200, 30, 1000, 30), -90);
 			Goal northGoal = new LineGoal("NG", BallColor.RED, new Line(200, 1770, 1000, 1770), 90);
-			Goal eastGoal = new LineGoal("EG", BallColor.BLUE, new Line(1150, 920, 1150, 980), 0);
-			Goal westGoal = new LineGoal("WG", BallColor.RED, new Line(50, 990, 50, 1030), 180);
+			Goal eastGoal = new LineGoal("EG", BallColor.BLUE, new Line(1130, 920, 1130, 980), 0);
+			Goal westGoal = new LineGoal("WG", BallColor.RED, new Line(70, 990, 70, 1030), 180);
 			
 			List<Ball> balls = new ArrayList<Ball>();
 			balls.add(new Ball(new Point(196, 1383), BallColor.RED));

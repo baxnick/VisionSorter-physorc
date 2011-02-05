@@ -6,7 +6,7 @@ import lejos.geom.Point;
 
 public class DisengageGoalBehaviour implements BotStrategy {
 	
-	private final float DISENGAGE_SPEED = 40.0f; // speed in mm/s
+	private final float DISENGAGE_SPEED = 150.0f; // speed in mm/s
 	
 	public void execute(GripperBot bot) throws InterruptedException
 	{

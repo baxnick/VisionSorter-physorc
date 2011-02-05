@@ -8,8 +8,8 @@ public class GripperBotConfiguration {
 	public float wheelDiameter = 56.0f;
 	public float trackWidth = 122.0f;
 	public float rearDisplacement = 145.0f;
-	public float operatingSpeed = 80.0f;
-	public float rotationSpeed = 30.0f; // deg / sec for turning in place
+	public float operatingSpeed = 240.0f;
+	public float rotationSpeed = 90.0f; // deg / sec for turning in place
 	public int leftMotor = 0;
 	public int rightMotor = 2;
 	

@@ -4,7 +4,7 @@ import physical.GripperBot;
 import lejos.geom.Point;
 
 public class ApproachGoalBehaviour implements BotStrategy {
-	private static final int APPROACH_SPEED = 50;
+	private static final int APPROACH_SPEED = 100;
 	private Point goalLocation;
 	private float preferredHeading;
 	

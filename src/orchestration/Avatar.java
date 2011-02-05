@@ -27,10 +27,12 @@ public class Avatar implements Runnable, Plannable {
 	private Thread collisionThread;
 	private CubeSubscriber cubeSubscriber = null;
 	private long lastVision = 0;
-	private final int acceptableReckoningTime = 20 * 1000;
-	private final int updateFreq = 1 * 1000;
+	private long lastMoving = 0;
+	private final int acceptableReckoningTime = 10 * 1000;
 	
-	private Point visionZone = new Point(500, 400);
+	private final int updateFreq = 3 * 1000;
+	
+	private Point visionZone = new Point(600, 900);
 	private boolean isActive = false;
 	private boolean connectionUp = true;
 	
@@ -147,6 +149,7 @@ public class Avatar implements Runnable, Plannable {
 		return isActive;
 	}
 	
+	private static final long acceptableStillTime = 3500; //ms
 	private class CubeSubscriber implements LCMSubscriber
 	{
 		private Lock messageLock = new ReentrantLock();
@@ -157,10 +160,13 @@ public class Avatar implements Runnable, Plannable {
 			cube_t cube = new cube_t(ins);
 			
 			if (!getName().equals(cube.id)) return;
-			
+
 			long now = System.currentTimeMillis();
+			if (Avatar.this.bot.getNav().isMoving())
+				lastMoving = now;
+			
 			if (now - lastVision > updateFreq && 
-					!Avatar.this.bot.getNav().isMoving())
+					now - lastMoving > acceptableStillTime)
 			{
 				boolean locked = messageLock.tryLock();
 				if (!locked) return;

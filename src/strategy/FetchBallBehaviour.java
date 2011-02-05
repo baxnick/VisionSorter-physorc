@@ -1,8 +1,10 @@
 package strategy;
 
+import physical.BetterNavigator;
 import physical.GripperBot;
 import physical.Helper;
 import lejos.geom.Point;
+import lejos.robotics.Pose;
 
 
 public class FetchBallBehaviour implements BotStrategy{
@@ -10,31 +12,46 @@ public class FetchBallBehaviour implements BotStrategy{
 	
 	private final float APPROACH_SPEED = 50.0f; // speed in mm/s
 	private final float TURN_SPEED = 20.0f; // speed in deg/s
-	private final int PREEMPTIVE_GRIP_TIME = 2000;
+	private final int PREEMPTIVE_GRIP_TIME = 1000;
 	
 	public FetchBallBehaviour(Point target)
 	{
 		this.target = target;
 	}
 	
+	private static final float headingError = 1.5f;
 	public void execute(GripperBot bot) throws InterruptedException
 	{
-		bot.getNav().setMoveSpeed(APPROACH_SPEED);
-		bot.getNav().setTurnSpeed(TURN_SPEED);
+		BetterNavigator botNav = bot.getNav();
+		botNav.setMoveSpeed(APPROACH_SPEED);
+		botNav.setTurnSpeed(TURN_SPEED);
 		
-		bot.getNav().stop();
-		bot.getNav().rotateTo(bot.getNav().angleTo(target.x, target.y), true);
-		bot.getGrip().release();
+		botNav.stop();
 		
-		while (bot.getNav().isMoving())
+		Pose botPose;
+		float ballHeading;
+		do
 		{
-			Thread.yield();
-			if (Thread.interrupted()) throw new InterruptedException();
-		}
+		botPose = botNav.getPose();
+		ballHeading = botNav.angleTo(target.x, target.y);
 		
-		float distance = bot.getNav().distanceTo(target.x, target.y)* 1.2f;
+			System.out.println("(PRE) " + bot.getConfig().getName() + " @ " + botPose.getX() + ", " + botPose.getY() +
+					" mh: " + botPose.getHeading() + " bh: " + ballHeading);
+			
+			
+			botNav.rotateTo(ballHeading, false);
+			botNav.stop();
+			bot.getGrip().release();
+	
+			
+			botPose = botNav.getPose();
+			System.out.println("(POST) " + bot.getConfig().getName() + " @ " + botPose.getX() + ", " + botPose.getY() +
+					" FETCHING ball @ " + target.x + ", " + target.y + " mh: " + botPose.getHeading());
+		} while (Math.abs(botPose.getHeading() - ballHeading) > headingError);
 		
-		bot.getNav().travel(distance, true);
+		float distance = botNav.distanceTo(target.x, target.y)* 1.2f;
+		
+		botNav.travel(distance, true);
 		
 		try {
 			Thread.sleep((int)Math.max(0, (int)(1000. * distance / APPROACH_SPEED) - PREEMPTIVE_GRIP_TIME));
@@ -44,11 +61,11 @@ public class FetchBallBehaviour implements BotStrategy{
 		
 		bot.getGrip().grip();
 		
-		while (bot.getNav().isMoving())
+		while (botNav.isMoving())
 		{
 			Thread.yield();
 			if (Thread.interrupted()) throw new InterruptedException();
 		}	
-		bot.getNav().setMoveSpeed(bot.getConfig().operatingSpeed);
+		botNav.setMoveSpeed(bot.getConfig().operatingSpeed);
 	}
 }

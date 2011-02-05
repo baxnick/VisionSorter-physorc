@@ -355,7 +355,6 @@ public class TaskOverlord {
 				   javinatedBalls.add(javaBall);
 			   }
 			   
-			   System.out.println(javinatedBalls.size() + " balls detected.");
 			   ballsUpdate(javinatedBalls);
 			   messageLock.unlock();
 		   }

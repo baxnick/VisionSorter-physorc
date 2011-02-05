@@ -111,11 +111,11 @@ public class Task {
 				Point target = bot.getVision().visionPoint();
 				router.follow(router.create(target));
 				
-				Thread.sleep(1500);
+				Thread.sleep(4000);
 				while (bot.getVision().needsVision())
 				{
 					bot.getNav().rotate(15);
-					Thread.sleep(1500);
+					Thread.sleep(4000);
 				}
 				
 				nextState = continuationState;
