@@ -26,6 +26,7 @@ import physical.comms.SimpleCallback;
  *
  */
 public class Avatar implements Runnable, Plannable {
+	private AvatarConfig cfg = new AvatarConfig();
 	private LordSupreme parent;
 	private TaskOverlord overlord;
 	private GripperBot bot;
@@ -38,11 +39,6 @@ public class Avatar implements Runnable, Plannable {
 	private long lastVision = 0;
 	private long lastMoving = 0;
 	
-	private static final int acceptableReckoningTime = 10000; // ms
-	private static final int updateFreq = 3000; // ms
-	private static final long acceptableStillTime = 3500; // ms
-	
-	private Point visionZone = new Point(600, 900);
 	private boolean isActive = false;
 	private boolean connectionUp = true;
 	
@@ -66,7 +62,7 @@ public class Avatar implements Runnable, Plannable {
 	
 	public boolean needsVision()
 	{
-		return lastVision < System.currentTimeMillis() - acceptableReckoningTime;
+		return lastVision < System.currentTimeMillis() - cfg.acceptableReckoningTime;
 	}
 	
 	@Override
@@ -132,7 +128,7 @@ public class Avatar implements Runnable, Plannable {
 		@Override
 		public Point visionPoint()
 		{
-			return visionZone;
+			return cfg.visionZone;
 		}
 		
 	}
@@ -191,8 +187,8 @@ public class Avatar implements Runnable, Plannable {
 			if (Avatar.this.bot.getNav().isMoving())
 				lastMoving = now;
 			
-			if (now - lastVision > updateFreq && 
-					now - lastMoving > acceptableStillTime)
+			if (now - lastVision > cfg.updateFreq && 
+					now - lastMoving > cfg.acceptableStillTime)
 			{
 				boolean locked = messageLock.tryLock();
 				if (!locked) return;
@@ -240,6 +236,11 @@ public class Avatar implements Runnable, Plannable {
 				location, heading);
 	}
 
+	public void reconfigure(AvatarConfig config)
+	{
+		this.cfg = config;
+	}
+	
 	public static Avatar spawn(LordSupreme lord, GripperBot recruitBot)
 	{
 		Avatar newbie = new Avatar(lord, recruitBot);
