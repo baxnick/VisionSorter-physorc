@@ -23,6 +23,8 @@ import lejos.pc.comm.NXTInfo;
  *
  */
 public class HotBotWatch implements Runnable {
+	private static final int RETRY_INTERVAL = 3000; //ms, how long to wait in between bluetooth pings
+	
 	private LordSupreme parent;
 	
 	public HotBotWatch(LordSupreme parent)
@@ -79,7 +81,7 @@ public class HotBotWatch implements Runnable {
 
 			try
 			{
-				Thread.sleep(3000);
+				Thread.sleep(RETRY_INTERVAL);
 			}
 			catch(InterruptedException e)
 			{

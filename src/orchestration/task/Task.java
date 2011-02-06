@@ -29,8 +29,11 @@ public class Task {
 	private TaskOverlord overlord;
 	private TaskState state;
 	private RouteMaker router;
+	private TaskConfig cfg;
+	
 	private boolean taskActive = true;
 	private boolean hasBall = false;
+	private long firstExpired = 0;
 	
 	public Task (TaskOverlord overlord, PathPlanner planner, Avatar avatar, Ball ball, Goal goal)
 	{
@@ -70,7 +73,7 @@ public class Task {
 				try
 					{
 					Point ballLoc = ball.getLocation();
-					router.follow(router.create(ballLoc, 180));
+					router.follow(router.create(ballLoc, cfg.fetchShortDistance));
 					if (halted) continue;
 					ball.fetch().execute(bot);
 					hasBall = true;
@@ -123,11 +126,11 @@ public class Task {
 				Point target = avatar.getVision().visionPoint();
 				router.follow(router.create(target));
 				
-				Thread.sleep(4000);
+				Thread.sleep(cfg.visionWaitTime);
 				while (avatar.getVision().needsVision())
 				{
-					bot.getNav().rotate(15);
-					Thread.sleep(4000);
+					bot.getNav().rotate(cfg.visionRotationAmount);
+					Thread.sleep(cfg.visionWaitTime);
 				}
 				
 				nextState = continuationState;
@@ -226,9 +229,6 @@ public class Task {
 	{
 		return state == TaskState.DELAYED;
 	}
-
-	private long firstExpired = 0;
-	private static final long expiryAllowance = 20 * 1000;
 	
 	public void unExpire()
 	{
@@ -243,7 +243,12 @@ public class Task {
 			firstExpired = now;
 		else
 		{
-			if ((now - firstExpired) > expiryAllowance) abort();
+			if ((now - firstExpired) > cfg.expiryAllowance) abort();
 		}
+	}
+	
+	public void reconfigure(TaskConfig config)
+	{
+		this.cfg = config;
 	}
 }
