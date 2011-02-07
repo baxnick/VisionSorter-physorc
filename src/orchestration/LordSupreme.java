@@ -11,28 +11,24 @@ import orchestration.task.TaskOverlord;
 import lcm.lcm.LCM;
 
 /**
- * The LordSupreme serves as the central co-ordination point of the various
- * major components that make up the system.
+ * The LordSupreme serves as the central co-ordination point of the various major components that make up the system.
  * 
- * The major components being:
- *  orchestration.Avatar
- * 	orchesration.HotBotWatch
- *  orchestration.task.TaskOverlord
- *  orchestration.path.PathPlanner
- *
- * And in a more general capacity:
- *  lcm.lcm.LCM
- *  
+ * The major components being: orchestration.Avatar orchesration.HotBotWatch orchestration.task.TaskOverlord
+ * orchestration.path.PathPlanner
+ * 
+ * And in a more general capacity: lcm.lcm.LCM
+ * 
  * @author baxnick
- *
+ * 
  */
-public class LordSupreme {
+public class LordSupreme
+{
 	public List<Avatar> avatars = Collections.synchronizedList(new ArrayList<Avatar>(4));
 	public PathPlanner planner;
 	public TaskOverlord overlord;
 	public LCM lcm;
 	private HotBotWatch watcher;
-	
+
 	public LordSupreme()
 	{
 		lcm = LCM.getSingleton();
@@ -40,39 +36,38 @@ public class LordSupreme {
 		overlord = new TaskOverlord(this);
 		watcher = new HotBotWatch(this);
 	}
-	
+
 	public void start()
 	{
 		new Thread(watcher).start();
 	}
-	
+
 	public TaskOverlord getOverlord()
 	{
 		return overlord;
 	}
-	
+
 	public synchronized void reportForDuty(Avatar avatar)
 	{
 		avatars.add(avatar);
 	}
-	
+
 	public synchronized void removeFromDuty(Avatar avatar)
 	{
 		avatars.remove(avatar);
 	}
-	
+
 	public synchronized boolean isActive(String name)
 	{
-		for(Avatar avatar : avatars)
+		for (Avatar avatar : avatars)
 		{
-			if (avatar.getName().equals(name))
-				return true;
+			if (avatar.getName().equals(name)) return true;
 		}
-		
+
 		return false;
 	}
-	
-	public int priority (Avatar avatar)
+
+	public int priority(Avatar avatar)
 	{
 		return avatars.indexOf(avatar);
 	}

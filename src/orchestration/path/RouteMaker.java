@@ -10,7 +10,7 @@ public class RouteMaker
 	private BetterNavigator nav;
 	private GripperBot bot;
 	private String name;
-	
+
 	public RouteMaker(PathPlanner planner, GripperBot bot, String name)
 	{
 		this.planner = planner;
@@ -18,17 +18,17 @@ public class RouteMaker
 		this.bot = bot;
 		this.nav = bot.getNav();
 	}
-	
+
 	public Route create(Point pt)
 	{
 		return planner.requestRoute(name, pt);
 	}
-	
+
 	public Route create(Point pt, float shortAmount)
 	{
 		return planner.requestRoute(name, pt, shortAmount);
 	}
-	
+
 	public void follow(Route route) throws InterruptedException
 	{
 		while (!route.areWeThereYet())
@@ -47,7 +47,7 @@ public class RouteMaker
 				throw e;
 			}
 		}
-		
+
 		route.discard();
 	}
 }

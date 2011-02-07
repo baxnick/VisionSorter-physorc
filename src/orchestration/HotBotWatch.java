@@ -11,37 +11,41 @@ import lejos.pc.comm.NXTCommFactory;
 import lejos.pc.comm.NXTInfo;
 
 /**
- * The HotBotWatch watches the bluetooth network for robots it can connect
- * to. Whenever it establishes a connection with a new robot, it creates
- * an implementation of GripperBot, passing it on to Avatar.spawn, which
- * will begin the Avatar thread after constructing it.
+ * The HotBotWatch watches the bluetooth network for robots it can connect to. Whenever it establishes a connection with
+ * a new robot, it creates an implementation of GripperBot, passing it on to Avatar.spawn, which will begin the Avatar
+ * thread after constructing it.
  * 
- * It accesses the Lejos NXT functionality quite directly for an "orchestration"
- * layer class, it might possibly do to split it into physical/orchestration.
+ * It accesses the Lejos NXT functionality quite directly for an "orchestration" layer class, it might possibly do to
+ * split it into physical/orchestration.
  * 
  * @author baxnick
- *
+ * 
  */
-public class HotBotWatch implements Runnable {
-	private static final int RETRY_INTERVAL = 3000; //ms, how long to wait in between bluetooth pings
-	
+public class HotBotWatch implements Runnable
+{
+	private static final int RETRY_INTERVAL = 3000; // ms, how long to wait in between bluetooth pings
+
 	private LordSupreme parent;
-	
+
 	public HotBotWatch(LordSupreme parent)
 	{
 		this.parent = parent;
 	}
-	
+
 	@Override
-	public void run() {
+	public void run()
+	{
 		NXTComm searchComm = null;
-		try {
+		try
+		{
 			searchComm = NXTCommFactory.createNXTComm(NXTCommFactory.BLUETOOTH);
-		} catch (NXTCommException e1) {
+		}
+		catch (NXTCommException e1)
+		{
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
+
 		while (true)
 		{
 			NXTInfo[] matches = null;
@@ -56,11 +60,9 @@ public class HotBotWatch implements Runnable {
 					{
 						if (!parent.isActive(match.name))
 						{
-							NXTComm recruitComm = NXTCommFactory
-									.createNXTComm(NXTCommFactory.BLUETOOTH);
+							NXTComm recruitComm = NXTCommFactory.createNXTComm(NXTCommFactory.BLUETOOTH);
 							recruitComm.open(match);
-							GripperBot recruitBot = GripperBotImpl
-									.standardGripper(match.name, recruitComm);
+							GripperBot recruitBot = GripperBotImpl.standardGripper(match.name, recruitComm);
 							Avatar.spawn(parent, recruitBot);
 						}
 					}
@@ -83,7 +85,7 @@ public class HotBotWatch implements Runnable {
 			{
 				Thread.sleep(RETRY_INTERVAL);
 			}
-			catch(InterruptedException e)
+			catch (InterruptedException e)
 			{
 				e.printStackTrace();
 			}

@@ -10,22 +10,22 @@ import lejos.geom.Point;
 public class BraindeadPlanner implements PathPlanner
 {
 	private LordSupreme parent;
-	private Map<String,PlannerShape> obstacles = new HashMap<String,PlannerShape>();
-	
+	private Map<String, PlannerShape> obstacles = new HashMap<String, PlannerShape>();
+
 	public BraindeadPlanner(LordSupreme parent)
 	{
 		this.parent = parent;
 	}
-	
+
 	private void updateObstacles()
 	{
-		obstacles = new HashMap<String,PlannerShape>();
+		obstacles = new HashMap<String, PlannerShape>();
 		for (Plannable p : parent.avatars)
 		{
 			obstacles.put(p.getPlanningName(), p.getPlannerShape());
 		}
 	}
-	
+
 	public Route requestRoute(String id, Point destination)
 	{
 		updateObstacles();
@@ -39,17 +39,14 @@ public class BraindeadPlanner implements PathPlanner
 		PlannerShape from = obstacles.get(id);
 		java.awt.Point awtPt = from.center();
 		Point fromPt = new Point(awtPt.x, awtPt.y);
-		
+
 		double angle = angleBetween(fromPt, destination);
-		
+
 		float shortX = (float) Math.cos(angle) * shortAmount;
 		float shortY = (float) Math.sin(angle) * shortAmount;
-		
-		
-		Point modifiedDestination = new Point(
-				destination.x - shortX , 
-				destination.y - shortY);
-		
+
+		Point modifiedDestination = new Point(destination.x - shortX, destination.y - shortY);
+
 		return requestRoute(id, modifiedDestination);
 	}
 
@@ -57,14 +54,14 @@ public class BraindeadPlanner implements PathPlanner
 	public void discardRoute(Route route)
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 	private static double angleBetween(Point a, Point b)
 	{
 		float opp = b.x - a.x;
 		float adj = b.y - a.y;
-		
+
 		return Math.atan2(adj, opp);
 	}
 

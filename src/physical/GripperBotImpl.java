@@ -13,64 +13,66 @@ import lejos.robotics.Pose;
 import lejos.robotics.TachoMotor;
 import lejos.robotics.navigation.TachoPilot;
 
-public class GripperBotImpl implements GripperBot {
-	
+public class GripperBotImpl implements GripperBot
+{
+
 	private NXTCommand command;
-	
+
 	private GripperBotConfiguration config;
-	
+
 	private final BetterNavigator nav;
 	private final TachoPilot pilot;
 	private SimpleCallback errorCallback = null;
 	private boolean isConnected = true;
 	private FaultFilter connectionFilter;
-	
+
 	public static GripperBot standardGripper(String name, NXTComm comms) throws IOException, NXTCommException
 	{
 		GripperBotConfiguration standardConfig = new GripperBotConfiguration(name);
 		GripperBotImpl bot = new GripperBotImpl(standardConfig, comms);
-			
+
 		OverheadGripperConfig gripperConfig = new OverheadGripperConfig();
 		OverheadGripper overheadGrip = new OverheadGripper(gripperConfig);
 		overheadGrip.setMotor(bot.getMotor(gripperConfig.motorId));
-		
+
 		standardConfig.setGrip(overheadGrip);
-		
+
 		return bot;
 	}
-	
+
 	private TachoMotor getMotor(int id)
 	{
 		return new RemoteMotor(command, id);
 	}
-	
+
 	public GripperBotImpl(GripperBotConfiguration config, NXTComm comms)
 	{
 		this.config = config;
-		
+
 		command = new NXTCommand();
 		connectionFilter = new FaultFilter(comms);
 		connectionFilter.setCallback(new FaultedCallback());
-		
+
 		command.setNXTComm(connectionFilter);
 		command.setVerify(true);
-		
+
 		RemoteMotor left = new RemoteMotor(command, config.leftMotor);
 		RemoteMotor right = new RemoteMotor(command, config.rightMotor);
-		
-		pilot = new TachoPilot(config.wheelDiameter, config.trackWidth,
-				left, right);
+
+		pilot = new TachoPilot(config.wheelDiameter, config.trackWidth, left, right);
 		pilot.reset();
-		
+
 		nav = new BetterNavigator(pilot);
 		nav.trackPoint(new Point(0, config.gripDisplacement));
 		nav.setTurnSpeed(config.rotationSpeed);
 		nav.setMoveSpeed(config.operatingSpeed);
-		
-		new Thread (new HeartBeat()).start();
+
+		new Thread(new HeartBeat()).start();
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see physical.GripperBot#recalibrate()
 	 */
 	@Override
@@ -78,21 +80,28 @@ public class GripperBotImpl implements GripperBot {
 	{
 		getGrip().calibrate();
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see physical.GripperBot#finished()
 	 */
 	@Override
 	public void finished()
 	{
-		try {
+		try
+		{
 			command.close();
-		} catch (IOException e) {
+		}
+		catch (IOException e)
+		{
 			// We're finished, don't worry if an exception pops up.
 		}
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see physical.GripperBot#getGrip()
 	 */
 	@Override
@@ -100,8 +109,10 @@ public class GripperBotImpl implements GripperBot {
 	{
 		return config.getGrip();
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see physical.GripperBot#getNav()
 	 */
 	@Override
@@ -111,24 +122,27 @@ public class GripperBotImpl implements GripperBot {
 	}
 
 	@Override
-	public NXTCommand getCommand() {
+	public NXTCommand getCommand()
+	{
 		return command;
 	}
 
 	@Override
-	public GripperBotConfiguration getConfig() {
+	public GripperBotConfiguration getConfig()
+	{
 		return config;
 	}
 
 	@Override
-	public float safeDistance(float minDistance) {
+	public float safeDistance(float minDistance)
+	{
 		float safeDistance = config.rearDisplacement + config.gripDisplacement;
-		
+
 		return Math.max(safeDistance, minDistance);
 	}
 
 	@Override
-	public Point location() 
+	public Point location()
 	{
 		Pose navPose = nav.getPose();
 		return new Point(navPose.getX(), navPose.getY());
@@ -139,16 +153,16 @@ public class GripperBotImpl implements GripperBot {
 	{
 		this.errorCallback = onConnectionError;
 	}
-	
+
 	public void notifyError()
 	{
 		connectionErrored();
 	}
-	
+
 	private void connectionErrored()
 	{
 		if (!isConnected) return;
-		
+
 		isConnected = false;
 		if (errorCallback != null)
 		{
@@ -156,7 +170,7 @@ public class GripperBotImpl implements GripperBot {
 		}
 		finished();
 	}
-	
+
 	private class HeartBeat implements Runnable
 	{
 		@Override
@@ -174,12 +188,12 @@ public class GripperBotImpl implements GripperBot {
 					e.printStackTrace();
 					break;
 				}
-				
+
 				if (!command.isOpen())
 				{
 					connectionErrored();
 				}
-				
+
 				if (connectionFilter.isFaulted())
 				{
 					connectionErrored();
@@ -187,7 +201,7 @@ public class GripperBotImpl implements GripperBot {
 			}
 		}
 	}
-	
+
 	private class FaultedCallback implements SimpleCallback
 	{
 		@Override
@@ -195,7 +209,7 @@ public class GripperBotImpl implements GripperBot {
 		{
 			if (connectionFilter.isFaulted()) connectionErrored();
 		}
-		
+
 	}
 
 	@Override

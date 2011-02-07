@@ -6,7 +6,7 @@ import physical.GripperBot;
 public class BotLocationProvider implements LocationProvider
 {
 	private GripperBot bot;
-	
+
 	public BotLocationProvider(GripperBot bot)
 	{
 		this.bot = bot;
