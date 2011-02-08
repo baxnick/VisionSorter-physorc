@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import orchestration.errand.ErrandOverlord;
 import orchestration.path.BraindeadPlanner;
 import orchestration.path.PathPlanner;
-import orchestration.task.TaskOverlord;
 
 import lcm.lcm.LCM;
 
@@ -21,20 +21,20 @@ import lcm.lcm.LCM;
  * @author baxnick
  * 
  */
-public class LordSupreme
+public class Coordinator
 {
 	public List<Avatar> avatars = Collections.synchronizedList(new ArrayList<Avatar>(4));
 	public PathPlanner planner;
-	public TaskOverlord overlord;
+	public ErrandOverlord overlord;
 	public LCM lcm;
-	private HotBotWatch watcher;
+	private LiveBotFinder watcher;
 
-	public LordSupreme()
+	public Coordinator()
 	{
 		lcm = LCM.getSingleton();
 		planner = new BraindeadPlanner(this);
-		overlord = new TaskOverlord(this);
-		watcher = new HotBotWatch(this);
+		overlord = new ErrandOverlord(this);
+		watcher = new LiveBotFinder(this);
 	}
 
 	public void start()
@@ -42,7 +42,7 @@ public class LordSupreme
 		new Thread(watcher).start();
 	}
 
-	public TaskOverlord getOverlord()
+	public ErrandOverlord getOverlord()
 	{
 		return overlord;
 	}

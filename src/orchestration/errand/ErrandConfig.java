@@ -1,6 +1,6 @@
-package orchestration.task;
+package orchestration.errand;
 
-public class TaskConfig
+public class ErrandConfig
 {
 
 	// How long can the targetted ball be out of sight before the task

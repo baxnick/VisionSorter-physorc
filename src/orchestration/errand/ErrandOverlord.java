@@ -1,4 +1,4 @@
-package orchestration.task;
+package orchestration.errand;
 
 import java.io.IOException;
 import java.util.List;
@@ -7,7 +7,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import orchestration.Avatar;
-import orchestration.LordSupreme;
+import orchestration.Coordinator;
 import orchestration.goal.Goal;
 import orchestration.object.Ball;
 import orchestration.object.BallColor;
@@ -26,20 +26,20 @@ import lejos.geom.Point;
  * @author baxnick
  * 
  */
-public class TaskOverlord
+public class ErrandOverlord
 {
 	private Lock supplicantLock = new ReentrantLock();
 	private Lock compTaskLock = new ReentrantLock();
 
 	private List<Avatar> supplicants = new Vector<Avatar>();
-	private List<Task> completedTasks = new Vector<Task>();
-	private List<Task> tasks = new Vector<Task>();
+	private List<Errand> completedTasks = new Vector<Errand>();
+	private List<Errand> tasks = new Vector<Errand>();
 	private List<Ball> freeBalls = new Vector<Ball>();
 	private List<Goal> goals = new Vector<Goal>();
 
-	private LordSupreme parent;
+	private Coordinator parent;
 
-	public TaskOverlord(LordSupreme parent)
+	public ErrandOverlord(Coordinator parent)
 	{
 		this.parent = parent;
 
@@ -57,7 +57,7 @@ public class TaskOverlord
 		supplicantLock.unlock();
 	}
 
-	public Task createDuty(Avatar soldier)
+	public Errand createDuty(Avatar soldier)
 	{
 		System.out.println(soldier.getName() + " is receiving a task.");
 		System.out.print(tasks.size() + " active tasks. ");
@@ -68,7 +68,7 @@ public class TaskOverlord
 		Ball nearestBall = findNearestBall(avatarLoc);
 		Goal nearestGoal = findBestGoal(avatarLoc, nearestBall);
 
-		Task newTask = new Task(this, parent.planner, soldier, nearestBall, nearestGoal);
+		Errand newTask = new Errand(this, parent.planner, soldier, nearestBall, nearestGoal);
 		takeBall(nearestBall);
 		tasks.add(newTask);
 
@@ -155,7 +155,7 @@ public class TaskOverlord
 	public void ballsUpdate(List<Ball> detectedBalls)
 	{
 		compTaskLock.lock();
-		for (Task task : completedTasks)
+		for (Errand task : completedTasks)
 		{
 			tasks.remove(task);
 		}
@@ -166,7 +166,7 @@ public class TaskOverlord
 		List<Ball> detectedAndFree = new Vector<Ball>();
 		List<Ball> activeBalls = new Vector<Ball>();
 
-		for (Task task : tasks)
+		for (Errand task : tasks)
 			activeBalls.add(task.getBall());
 
 		for (Ball incoming : detectedBalls)
@@ -185,9 +185,9 @@ public class TaskOverlord
 		// It's possible it was just obscured by the robot picking it up though, so
 		// give it a very generous time limit to get it's act together
 
-		List<Task> expiredTasks = new Vector<Task>();
+		List<Errand> expiredTasks = new Vector<Errand>();
 
-		for (Task task : tasks)
+		for (Errand task : tasks)
 		{
 			if (task.hasBall()) continue;
 
@@ -209,7 +209,7 @@ public class TaskOverlord
 
 		// Need to process expirations from a separate collection, as the
 		// invocation can cause it's removal from the task list..
-		for (Task task : expiredTasks)
+		for (Errand task : expiredTasks)
 		{
 			task.attemptExpire();
 		}
@@ -265,7 +265,7 @@ public class TaskOverlord
 		return null;
 	}
 
-	public void abortTask(Task task)
+	public void abortTask(Errand task)
 	{
 		compTaskLock.lock();
 		completedTasks.add(task);
@@ -274,7 +274,7 @@ public class TaskOverlord
 
 	}
 
-	public void completeTask(Task task)
+	public void completeTask(Errand task)
 	{
 		compTaskLock.lock();
 		completedTasks.add(task);

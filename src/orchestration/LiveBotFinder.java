@@ -21,13 +21,13 @@ import lejos.pc.comm.NXTInfo;
  * @author baxnick
  * 
  */
-public class HotBotWatch implements Runnable
+public class LiveBotFinder implements Runnable
 {
 	private static final int RETRY_INTERVAL = 3000; // ms, how long to wait in between bluetooth pings
 
-	private LordSupreme parent;
+	private Coordinator parent;
 
-	public HotBotWatch(LordSupreme parent)
+	public LiveBotFinder(Coordinator parent)
 	{
 		this.parent = parent;
 	}

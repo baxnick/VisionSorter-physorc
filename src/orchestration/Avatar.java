@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import orchestration.errand.Errand;
+import orchestration.errand.ErrandOverlord;
 import orchestration.path.Plannable;
 import orchestration.path.PlannerShape;
 import orchestration.path.RectShape;
-import orchestration.task.Task;
-import orchestration.task.TaskOverlord;
 
 import lcm.lcm.*;
 import lcmtypes.cube_t;
@@ -27,10 +27,10 @@ import physical.comms.SimpleCallback;
 public class Avatar implements Runnable, Plannable
 {
 	private AvatarConfig cfg = new AvatarConfig();
-	private LordSupreme parent;
-	private TaskOverlord overlord;
+	private Coordinator parent;
+	private ErrandOverlord overlord;
 	private GripperBot bot;
-	private Task task;
+	private Errand task;
 	private String name;
 	private Thread myThread;
 	private Thread collisionThread;
@@ -42,7 +42,7 @@ public class Avatar implements Runnable, Plannable
 	private boolean isActive = false;
 	private boolean connectionUp = true;
 
-	public Avatar(LordSupreme parent, GripperBot bot)
+	public Avatar(Coordinator parent, GripperBot bot)
 	{
 		parent.reportForDuty(this);
 
@@ -98,7 +98,7 @@ public class Avatar implements Runnable, Plannable
 		bot.finished();
 	}
 
-	public void assignTask(Task assignment)
+	public void assignTask(Errand assignment)
 	{
 		this.task = assignment;
 	}
@@ -232,7 +232,7 @@ public class Avatar implements Runnable, Plannable
 		this.cfg = config;
 	}
 
-	public static Avatar spawn(LordSupreme lord, GripperBot recruitBot)
+	public static Avatar spawn(Coordinator lord, GripperBot recruitBot)
 	{
 		Avatar newbie = new Avatar(lord, recruitBot);
 		newbie.start();

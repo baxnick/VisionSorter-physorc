@@ -3,16 +3,16 @@ package orchestration.path;
 import java.util.HashMap;
 import java.util.Map;
 
-import orchestration.LordSupreme;
+import orchestration.Coordinator;
 import lejos.geom.Point;
 
 // Behaves exactly as though there were absolutely no path planning in place.
 public class BraindeadPlanner implements PathPlanner
 {
-	private LordSupreme parent;
+	private Coordinator parent;
 	private Map<String, PlannerShape> obstacles = new HashMap<String, PlannerShape>();
 
-	public BraindeadPlanner(LordSupreme parent)
+	public BraindeadPlanner(Coordinator parent)
 	{
 		this.parent = parent;
 	}

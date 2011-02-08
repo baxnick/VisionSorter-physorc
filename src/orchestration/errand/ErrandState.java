@@ -1,6 +1,6 @@
-package orchestration.task;
+package orchestration.errand;
 
-public enum TaskState
+public enum ErrandState
 {
 	FETCHING, RETURNING, VISION, DELAYED, ABANDONED, COMPLETED
 }

@@ -1,4 +1,4 @@
-package orchestration.task;
+package orchestration.errand;
 
 import orchestration.Avatar;
 import orchestration.goal.Goal;
@@ -19,30 +19,30 @@ import lejos.geom.Point;
  * @author baxnick
  * 
  */
-public class Task
+public class Errand
 {
 	private PathPlanner planner;
 	private Avatar avatar;
 	private Ball ball;
 	private Goal goal;
 	private GripperBot bot;
-	private TaskOverlord overlord;
-	private TaskState state;
+	private ErrandOverlord overlord;
+	private ErrandState state;
 	private RouteMaker router;
-	private TaskConfig cfg;
+	private ErrandConfig cfg;
 
 	private boolean taskActive = true;
 	private boolean hasBall = false;
 	private long firstExpired = 0;
 
-	public Task(TaskOverlord overlord, PathPlanner planner, Avatar avatar, Ball ball, Goal goal)
+	public Errand(ErrandOverlord overlord, PathPlanner planner, Avatar avatar, Ball ball, Goal goal)
 	{
 		this.planner = planner;
 		this.overlord = overlord;
 		this.avatar = avatar;
 		this.ball = ball;
 		this.goal = goal;
-		updateState(TaskState.FETCHING);
+		updateState(ErrandState.FETCHING);
 	}
 
 	public void assignBot(GripperBot bot)
@@ -51,8 +51,8 @@ public class Task
 		router = new RouteMaker(planner, bot, avatar.getName());
 	}
 
-	private TaskState nextState;
-	private TaskState continuationState;
+	private ErrandState nextState;
+	private ErrandState continuationState;
 
 	public void fulfil()
 	{
@@ -65,10 +65,10 @@ public class Task
 			{
 				firstHaltFlag = false;
 				savedState = state;
-				updateState(TaskState.DELAYED);
+				updateState(ErrandState.DELAYED);
 			}
 
-			if (state == TaskState.FETCHING)
+			if (state == ErrandState.FETCHING)
 			{
 				try
 				{
@@ -82,17 +82,17 @@ public class Task
 
 					if (avatar.getVision().needsVision())
 					{
-						continuationState = TaskState.RETURNING;
-						nextState = TaskState.VISION;
+						continuationState = ErrandState.RETURNING;
+						nextState = ErrandState.VISION;
 					}
 					else
-						nextState = TaskState.RETURNING;
+						nextState = ErrandState.RETURNING;
 				}
 				catch (InterruptedException e)
 				{
 				}
 			}
-			else if (state == TaskState.RETURNING)
+			else if (state == ErrandState.RETURNING)
 			{
 				try
 				{
@@ -111,17 +111,17 @@ public class Task
 
 					if (avatar.getVision().needsVision())
 					{
-						continuationState = TaskState.COMPLETED;
-						nextState = TaskState.VISION;
+						continuationState = ErrandState.COMPLETED;
+						nextState = ErrandState.VISION;
 					}
 					else
-						nextState = TaskState.COMPLETED;
+						nextState = ErrandState.COMPLETED;
 				}
 				catch (InterruptedException e)
 				{
 				}
 			}
-			else if (state == TaskState.VISION)
+			else if (state == ErrandState.VISION)
 			{
 				try
 				{
@@ -141,28 +141,28 @@ public class Task
 				{
 				}
 			}
-			else if (state == TaskState.COMPLETED)
+			else if (state == ErrandState.COMPLETED)
 			{
 				System.out.println(ball);
 				taskActive = false;
 				overlord.completeTask(this);
 			}
-			else if (state == TaskState.ABANDONED)
+			else if (state == ErrandState.ABANDONED)
 			{
 				taskActive = false;
 				bot.getGrip().release();
 
 				if (avatar.getVision().needsVision())
 				{
-					continuationState = TaskState.ABANDONED;
-					nextState = TaskState.VISION;
+					continuationState = ErrandState.ABANDONED;
+					nextState = ErrandState.VISION;
 				}
 				else
 				{
 					overlord.abortTask(this);
 				}
 			}
-			else if (state == TaskState.DELAYED)
+			else if (state == ErrandState.DELAYED)
 			{
 				if (!halted)
 				{
@@ -184,7 +184,7 @@ public class Task
 
 	public void abort()
 	{
-		updateState(TaskState.ABANDONED);
+		updateState(ErrandState.ABANDONED);
 	}
 
 	public String toString()
@@ -194,7 +194,7 @@ public class Task
 
 	public boolean isCompleted()
 	{
-		return state == TaskState.ABANDONED || state == TaskState.COMPLETED;
+		return state == ErrandState.ABANDONED || state == ErrandState.COMPLETED;
 	}
 
 	public boolean hasBall()
@@ -204,7 +204,7 @@ public class Task
 
 	private boolean halted = false;
 	private boolean firstHaltFlag = false;
-	private TaskState savedState;
+	private ErrandState savedState;
 
 	public synchronized void halt()
 	{
@@ -218,7 +218,7 @@ public class Task
 		halted = false;
 	}
 
-	private synchronized void updateState(TaskState state)
+	private synchronized void updateState(ErrandState state)
 	{
 		if (isCompleted()) return;
 		if (this.state == state) return;
@@ -231,7 +231,7 @@ public class Task
 
 	public synchronized boolean isHalted()
 	{
-		return state == TaskState.DELAYED;
+		return state == ErrandState.DELAYED;
 	}
 
 	public void unExpire()
@@ -251,7 +251,7 @@ public class Task
 		}
 	}
 
-	public void reconfigure(TaskConfig config)
+	public void reconfigure(ErrandConfig config)
 	{
 		this.cfg = config;
 	}
