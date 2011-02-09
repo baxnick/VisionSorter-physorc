@@ -7,24 +7,23 @@ import orchestration.object.BallColor;
 
 import lejos.geom.Line;
 
+/**
+ * 
+ * @author baxnick
+ *
+ */
 public class LejosForVision
 {
 	public static void main(String[] args)
 	{
 		try
 		{
-			Goal eastGoal = new LineGoal("EG", BallColor.BLUE, new Line(1130, 920, 1130, 980), 0);
-			Goal westGoal = new LineGoal("WG", BallColor.RED, new Line(70, 990, 70, 1030), 180);
-
 			Coordinator hisHoliness = new Coordinator();
-
-			hisHoliness.overlord.announceGoal(westGoal);
-			hisHoliness.overlord.announceGoal(eastGoal);
-
 			hisHoliness.start();
 		}
 		catch (Exception e)
 		{
+			System.out.println("TOP LEVEL EXCEPTION");
 			e.printStackTrace();
 		}
 

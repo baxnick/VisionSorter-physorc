@@ -3,7 +3,8 @@ package orchestration;
 import lejos.geom.Point;
 
 /**
- * Provides a separate interface for querying vision. Not strictly necessary but I wrote it anyway.
+ * Provides a separate interface for querying vision. Not strictly necessary,
+ * but I wrote it anyway.
  * 
  * @author baxnick
  * 

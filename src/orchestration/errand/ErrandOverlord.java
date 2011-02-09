@@ -20,8 +20,9 @@ import lcmtypes.ball_t;
 import lejos.geom.Point;
 
 /**
- * TaskOverlord monitors the positioning of balls and goals placed on the table, fulfilling requests by avatars by
- * instantiating Task objects in response whenever new balls become available.
+ * ErrandOverlord monitors the positioning of balls and goals placed on the
+ * table, fulfilling requests by avatars by instantiating Task objects in
+ * response whenever new balls become available.
  * 
  * @author baxnick
  * 

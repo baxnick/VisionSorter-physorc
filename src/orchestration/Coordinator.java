@@ -5,16 +5,21 @@ import java.util.Collections;
 import java.util.List;
 
 import orchestration.errand.ErrandOverlord;
+import orchestration.goal.Goal;
 import orchestration.path.BraindeadPlanner;
 import orchestration.path.PathPlanner;
 
 import lcm.lcm.LCM;
 
 /**
- * The LordSupreme serves as the central co-ordination point of the various major components that make up the system.
+ * The Coordinator serves as the central co-ordination point of the various 
+ * major components that make up the system.
  * 
- * The major components being: orchestration.Avatar orchesration.HotBotWatch orchestration.task.TaskOverlord
- * orchestration.path.PathPlanner
+ * The major components being: 
+ *  orchestration.Avatar 
+ *  orchesration.HotBotWatch 
+ *  orchestration.errand.ErrandOverlord
+ *  orchestration.path.PathPlanner
  * 
  * And in a more general capacity: lcm.lcm.LCM
  * 
@@ -28,7 +33,8 @@ public class Coordinator
 	public ErrandOverlord overlord;
 	public LCM lcm;
 	private LiveBotFinder watcher;
-
+	private CoordinatorConfig cfg = new CoordinatorConfig();
+	
 	public Coordinator()
 	{
 		lcm = LCM.getSingleton();
@@ -37,8 +43,18 @@ public class Coordinator
 		watcher = new LiveBotFinder(this);
 	}
 
+	public void reconfigure(CoordinatorConfig config)
+	{
+		this.cfg = config;
+	}
+	
 	public void start()
 	{
+		for(Goal goal: cfg.goals)
+		{
+			overlord.announceGoal(goal);
+		}
+		
 		new Thread(watcher).start();
 	}
 

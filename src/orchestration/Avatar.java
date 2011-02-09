@@ -17,9 +17,10 @@ import physical.GripperBot;
 import physical.comms.SimpleCallback;
 
 /**
- * The Avatar class works in concert with the Task and strategy.* classes in order to control a robot. It runs within
- * it's own thread, and is responsible only for it's particular underlying physical robot. There is one avatar spawned
- * each time a new robot is detected.
+ * The Avatar class works in concert with the Task and strategy.* classes in 
+ * order to control a robot. It runs within it's own thread, and is responsible 
+ * only for it's particular underlying physical robot. There is one avatar 
+ * spawned each time a new robot is detected.
  * 
  * @author baxnick
  * 

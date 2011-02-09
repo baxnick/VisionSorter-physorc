@@ -10,11 +10,12 @@ import physical.GripperBot;
 import lejos.geom.Point;
 
 /**
- * A Task represents the intent of an avatar to deliver a particular ball to a particular goal. Furthermore, it keeps an
- * internal state machine of the task progress and manages each stage of the task on behalf of the avatar.
+ * An Errand represents the intent of an avatar to deliver a particular ball 
+ * to a particular goal. Furthermore, it keeps an internal state machine of the 
+ * task progress and manages each stage of the task on behalf of the avatar.
  * 
- * Once the task has been finished, the Task will be discarded, and the avatar will request a new one from the
- * TaskOverlord.
+ * Once the task has been finished, the Task will be discarded, and the avatar 
+ * will request a new one from the ErrandOverlord.
  * 
  * @author baxnick
  * 
