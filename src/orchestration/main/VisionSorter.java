@@ -1,18 +1,13 @@
 package orchestration.main;
 
 import orchestration.Coordinator;
-import orchestration.goal.Goal;
-import orchestration.goal.LineGoal;
-import orchestration.object.BallColor;
-
-import lejos.geom.Line;
 
 /**
  * 
  * @author baxnick
  *
  */
-public class LejosForVision
+public class VisionSorter
 {
 	public static void main(String[] args)
 	{
