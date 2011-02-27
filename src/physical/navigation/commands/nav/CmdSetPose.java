@@ -6,15 +6,16 @@ import lejos.robotics.Pose;
 
 public class CmdSetPose extends NavigatorCommand
 {
-	private static final long acceptableDelay = 50; //ms
+	private static final long acceptableDelay = 30; //ms
 	
 	private Pose newPose;
 	private long timeReceived;
 	private boolean success = false;
 	
-	public CmdSetPose(Pose newPose, long timeReceived)
+	public CmdSetPose(Pose newPose)
 	{
-		this.setProperties(CommandPriority.HIGH, true, false);
+		this.timeReceived = System.currentTimeMillis();
+		this.setProperties(CommandPriority.LOW, true, false);
 		this.newPose = newPose;
 	}
 

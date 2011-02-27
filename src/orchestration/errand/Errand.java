@@ -50,7 +50,7 @@ public class Errand
 	private ErrandOverlord overlord;
 	private ErrandState state;
 	private RouteMaker router;
-	private ErrandConfig cfg;
+	private ErrandConfig cfg = new ErrandConfig();
 
 	private boolean taskActive = true;
 	private boolean hasBall = false;

@@ -52,6 +52,7 @@ public class RouteMaker
 		while (!route.areWeThereYet())
 		{
 				Point next = route.next();
+				System.out.println("Travelling to " + next.x + ", " + next.y);
 				nav.BExecute(new CmdGoTo(next));
 				Thread.yield();
 		}

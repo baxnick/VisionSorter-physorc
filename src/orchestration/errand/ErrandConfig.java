@@ -24,7 +24,7 @@ public class ErrandConfig
 
 	// How long can the targetted ball be out of sight before the task
 	// to fetch it is abandoned?
-	public long expiryAllowance = 20000; // ms
+	public long expiryAllowance = 30000; // ms
 
 	// How long should the bot wait in each orientation while it is waiting
 	// to get a vision fix?

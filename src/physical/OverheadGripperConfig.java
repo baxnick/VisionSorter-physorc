@@ -23,15 +23,15 @@ public class OverheadGripperConfig
 {
 	public boolean reverseDirection;
 	public float operatingSpeedMulti;
-	public int grippedTach = 205;
-	public int releasedTach = 130;
+	public int grippedTach = 100;
+	public int releasedTach = 10;
 	public float calibrationArc = 250.0f;
 	public int calibrationSpeed = 60;
 	public int motorId = 1;
 
 	public OverheadGripperConfig()
 	{
-		reverseDirection = true;
+		reverseDirection = false;
 		operatingSpeedMulti = 0.2f;
 
 		grippedTach *= directionMultiplier();

@@ -81,6 +81,7 @@ public class NavControl
 				
 				if (currentCmd == null) continue;
 				
+				System.out.println("PROCESSING COMMAND " + currentCmd);
 				currentCmd.setNavigator(nav);
 				currentCmd.execute();
 				currentCmd.finish();
@@ -102,15 +103,14 @@ public class NavControl
 				atom.lock();
 				if (currentCmd != null && currentCmd.isInterruptibile() == false)
 				{
+					reads.enqueue(cmd);
 					atom.unlock();
 					continue;
 				}
-				else
-				{
-					atom.unlock();
-					reads.enqueue(cmd);
-				}
 				
+				atom.unlock();
+
+				System.out.println("PROCESSING READ " + currentCmd);
 				cmd.setNavigator(nav);
 				cmd.execute();
 				cmd.finish();

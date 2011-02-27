@@ -107,6 +107,7 @@ public class Avatar implements Runnable, Plannable
 
 			while (task == null)
 				Thread.yield();
+			
 			task.assignBot(bot);
 
 			System.out.println(getName() + " is taking task: " + task.toString());
@@ -133,6 +134,7 @@ public class Avatar implements Runnable, Plannable
 	{
 		connectionUp = false;
 		if (cubeSubscriber != null) parent.lcm.unsubscribe("CUBE", cubeSubscriber);
+		bot.getNav().shutdown();
 		myThread.interrupt();
 		collisionThread.interrupt();
 		if (task != null) task.abort();
@@ -203,11 +205,8 @@ public class Avatar implements Runnable, Plannable
 
 				if (!getName().equals(cube.id)) return;
 
-				long now = System.currentTimeMillis();
-				
 				CmdSetPose cSetPose = new CmdSetPose(
-						new Pose((float) cube.position[0], (float) cube.position[1], (float) cube.orientation),
-						now
+						new Pose((float) cube.position[0], (float) cube.position[1], (float) cube.orientation)
 				);
 				
 				cSetPose.setCaller(new PoseCallback());
