@@ -20,8 +20,8 @@
 package orchestration.path;
 
 import lejos.geom.Point;
-import physical.BetterNavigator;
 import physical.GripperBot;
+import physical.navigation.BetterNavigator;
 
 public class RouteMaker
 {

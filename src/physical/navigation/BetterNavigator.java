@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package physical;
+package physical.navigation;
 
 import lejos.robotics.Pose;
 import lejos.geom.Point;

@@ -19,8 +19,8 @@
 
 package strategy;
 
-import physical.BetterNavigator;
 import physical.GripperBot;
+import physical.navigation.BetterNavigator;
 import lejos.geom.Point;
 import lejos.robotics.Pose;
 

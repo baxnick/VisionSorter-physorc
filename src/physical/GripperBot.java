@@ -20,6 +20,7 @@
 package physical;
 
 import physical.comms.SimpleCallback;
+import physical.navigation.BetterNavigator;
 import lejos.geom.Point;
 import lejos.nxt.remote.NXTCommand;
 
