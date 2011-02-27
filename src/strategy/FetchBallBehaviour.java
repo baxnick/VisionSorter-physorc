@@ -20,9 +20,11 @@
 package strategy;
 
 import physical.GripperBot;
-import physical.navigation.BetterNavigator;
 import lejos.geom.Point;
 import lejos.robotics.Pose;
+import physical.navigation.NavControl;
+import physical.navigation.commands.BlockingCallback;
+import physical.navigation.commands.nav.*;
 
 public class FetchBallBehaviour implements BotStrategy
 {
@@ -37,37 +39,41 @@ public class FetchBallBehaviour implements BotStrategy
 
 	public void execute(GripperBot bot) throws InterruptedException
 	{
-		BetterNavigator botNav = bot.getNav();
+		NavControl navCon = bot.getNav();
 		float operatingSpeed = bot.getConfig().operatingSpeed * cfg.moveSpeedFactor;
 		float rotationSpeed = bot.getConfig().rotationSpeed * cfg.turnSpeedFactor;
-		botNav.setMoveSpeed(operatingSpeed);
-		botNav.setTurnSpeed(rotationSpeed);
-
-		botNav.stop();
 
 		Pose botPose;
 		float ballHeading;
+
+		bot.getGrip().release();
+		
 		do
 		{
-			botPose = botNav.getPose();
-			ballHeading = botNav.angleTo(target.x, target.y);
+			botPose = navCon.getPose();
+			CmdAngleTo cAngle = new CmdAngleTo(target);
+			navCon.BExecute(cAngle);
+			ballHeading = cAngle.getAngle();
 
 			System.out.println("(PRE) " + bot.getConfig().getName() + " @ " + botPose.getX() + ", " + botPose.getY()
 					+ " mh: " + botPose.getHeading() + " bh: " + ballHeading);
 
-			botNav.rotateTo(ballHeading, false);
-			botNav.stop();
-			bot.getGrip().release();
+			navCon.BExecute(new CmdRotateAng(ballHeading));
 
-			botPose = botNav.getPose();
+			botPose = navCon.getPose();
 			System.out.println("(POST) " + bot.getConfig().getName() + " @ " + botPose.getX() + ", " + botPose.getY()
 					+ " FETCHING ball @ " + target.x + ", " + target.y + " mh: " + botPose.getHeading());
 		}
 		while (Math.abs(botPose.getHeading() - ballHeading) > cfg.allowedHeadingError);
 
-		float distance = botNav.distanceTo(target.x, target.y) * 1.2f;
+		CmdDistanceTo cDist = new CmdDistanceTo(target);
+		navCon.BExecute(cDist);
+		float distance = cDist.getDistance() * 1.2f;
 
-		botNav.travel(distance, true);
+		CmdTravel cTravel = new CmdTravel(distance);
+		BlockingCallback bc = new BlockingCallback();
+		cTravel.setCaller(bc);
+		navCon.Execute(cTravel);
 
 		try
 		{
@@ -79,15 +85,8 @@ public class FetchBallBehaviour implements BotStrategy
 		}
 
 		bot.getGrip().grip();
-
-		while (botNav.isMoving())
-		{
-			Thread.yield();
-			if (Thread.interrupted()) throw new InterruptedException();
-		}
-
-		botNav.setMoveSpeed(bot.getConfig().operatingSpeed);
-		botNav.setTurnSpeed(bot.getConfig().rotationSpeed);
+		
+		while (!bc.isExecuted()) Thread.yield();
 	}
 
 	public void reconfigure(FetchBallConfig config)

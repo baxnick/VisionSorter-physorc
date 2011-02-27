@@ -1,16 +1,23 @@
 package physical.navigation.commands;
 
-public class Command
+public abstract class Command implements Comparable<Command>
 {
-	private final Callback caller;
+	private Callback caller;
 	private CommandPriority priority;
 	private boolean uniquity;
+	private boolean interruptibility;
 	
-	public Command(Callback caller)
+	public Command()
 	{
-		this.caller = caller;
+		this.caller = null;
 		this.priority = CommandPriority.LOW;
 		this.uniquity = false;
+		this.interruptibility = false;
+	}
+	
+	public void setCaller(Callback caller)
+	{
+		this.caller = caller;
 	}
 	
 	public Callback getCaller()
@@ -28,9 +35,30 @@ public class Command
 		return uniquity;
 	}
 	
-	protected void setProperties(CommandPriority priority, boolean uniquity)
+	public boolean isInterruptibile()
+	{
+		return interruptibility;
+	}
+	
+	protected void setProperties(CommandPriority priority, boolean uniquity, boolean interruptibility)
 	{
 		this.priority = priority;
 		this.uniquity = uniquity;
+		this.interruptibility = interruptibility;
+	}
+	
+	public abstract void execute();
+	public void finish()
+	{
+		if (caller != null)
+		{
+			caller.callback(this);
+		}
+	}
+	
+	@Override
+	public int compareTo(Command o)
+	{
+		return priority.compareTo(o.getPriority());
 	}
 }

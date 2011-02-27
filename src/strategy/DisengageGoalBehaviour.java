@@ -20,6 +20,7 @@
 package strategy;
 
 import physical.GripperBot;
+import physical.navigation.commands.nav.*;
 
 public class DisengageGoalBehaviour implements BotStrategy
 {
@@ -27,10 +28,8 @@ public class DisengageGoalBehaviour implements BotStrategy
 
 	public void execute(GripperBot bot) throws InterruptedException
 	{
-		bot.getNav().setMoveSpeed(bot.getConfig().operatingSpeed * cfg.speedFactor);
 		bot.getGrip().release();
-		bot.getNav().travel(-bot.safeDistance(0));
-		bot.getNav().setMoveSpeed(bot.getConfig().operatingSpeed);
+		bot.getNav().BExecute(new CmdTravel(-bot.safeDistance(0)));
 	}
 
 	public void reconfigure(DisengageGoalConfig config)

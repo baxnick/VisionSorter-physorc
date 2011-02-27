@@ -21,21 +21,20 @@ package orchestration.path;
 
 import lejos.geom.Point;
 import physical.GripperBot;
-import physical.navigation.BetterNavigator;
+import physical.navigation.NavControl;
+import physical.navigation.commands.nav.CmdGoTo;
 
 public class RouteMaker
 {
 	private PathPlanner planner;
-	private BetterNavigator nav;
-	private GripperBot bot;
+	private NavControl nav;
 	private String name;
 
-	public RouteMaker(PathPlanner planner, GripperBot bot, String name)
+	public RouteMaker(PathPlanner planner, NavControl nav, String name)
 	{
 		this.planner = planner;
 		this.name = name;
-		this.bot = bot;
-		this.nav = bot.getNav();
+		this.nav = nav;
 	}
 
 	public Route create(Point pt)
@@ -52,19 +51,9 @@ public class RouteMaker
 	{
 		while (!route.areWeThereYet())
 		{
-			try
-			{
 				Point next = route.next();
-				nav.setTurnSpeed(bot.getConfig().rotationSpeed);
-				nav.setMoveSpeed(bot.getConfig().operatingSpeed);
-				nav.goTo(next.x, next.y);
+				nav.BExecute(new CmdGoTo(next));
 				Thread.yield();
-			}
-			catch (InterruptedException e)
-			{
-				route.discard();
-				throw e;
-			}
 		}
 
 		route.discard();

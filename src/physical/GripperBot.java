@@ -20,7 +20,7 @@
 package physical;
 
 import physical.comms.SimpleCallback;
-import physical.navigation.BetterNavigator;
+import physical.navigation.NavControl;
 import lejos.geom.Point;
 import lejos.nxt.remote.NXTCommand;
 
@@ -33,15 +33,13 @@ public interface GripperBot
 
 	public abstract Gripper getGrip();
 
-	public abstract BetterNavigator getNav();
+	public abstract NavControl getNav();
 
 	public abstract NXTCommand getCommand();
 
 	public abstract GripperBotConfiguration getConfig();
 
 	public abstract float safeDistance(float minDistance);
-
-	public abstract float heading();
 
 	public abstract Point location();
 

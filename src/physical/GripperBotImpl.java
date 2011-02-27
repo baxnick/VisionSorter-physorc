@@ -24,6 +24,7 @@ import java.io.IOException;
 import physical.comms.FaultFilter;
 import physical.comms.SimpleCallback;
 import physical.navigation.BetterNavigator;
+import physical.navigation.NavControl;
 
 import lejos.geom.Point;
 import lejos.nxt.remote.*;
@@ -40,7 +41,7 @@ public class GripperBotImpl implements GripperBot
 
 	private GripperBotConfiguration config;
 
-	private final BetterNavigator nav;
+	private final NavControl navCon;
 	private final TachoPilot pilot;
 	private SimpleCallback errorCallback = null;
 	private boolean isConnected = true;
@@ -82,11 +83,12 @@ public class GripperBotImpl implements GripperBot
 		pilot = new TachoPilot(config.wheelDiameter, config.trackWidth, left, right);
 		pilot.reset();
 
-		nav = new BetterNavigator(pilot);
+		BetterNavigator nav = new BetterNavigator(pilot);
 		nav.trackPoint(new Point(0, config.gripDisplacement));
 		nav.setTurnSpeed(config.rotationSpeed);
 		nav.setMoveSpeed(config.operatingSpeed);
 
+		navCon = new NavControl(nav);
 		new Thread(new HeartBeat()).start();
 	}
 
@@ -136,9 +138,9 @@ public class GripperBotImpl implements GripperBot
 	 * @see physical.GripperBot#getNav()
 	 */
 	@Override
-	public BetterNavigator getNav()
+	public NavControl getNav()
 	{
-		return nav;
+		return navCon;
 	}
 
 	@Override
@@ -164,7 +166,7 @@ public class GripperBotImpl implements GripperBot
 	@Override
 	public Point location()
 	{
-		Pose navPose = nav.getPose();
+		Pose navPose = navCon.getPose();
 		return new Point(navPose.getX(), navPose.getY());
 	}
 
@@ -230,11 +232,5 @@ public class GripperBotImpl implements GripperBot
 			if (connectionFilter.isFaulted()) connectionErrored();
 		}
 
-	}
-
-	@Override
-	public float heading()
-	{
-		return getNav().getAngle();
 	}
 }

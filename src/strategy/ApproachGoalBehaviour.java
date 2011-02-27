@@ -20,6 +20,7 @@
 package strategy;
 
 import physical.GripperBot;
+import physical.navigation.commands.nav.*;
 import lejos.geom.Point;
 
 public class ApproachGoalBehaviour implements BotStrategy
@@ -36,12 +37,9 @@ public class ApproachGoalBehaviour implements BotStrategy
 
 	public void execute(GripperBot bot) throws InterruptedException
 	{
-		bot.getNav().setMoveSpeed(bot.getConfig().operatingSpeed * cfg.speedFactor);
-		bot.getNav().stop();
-		bot.getNav().goTo(goalLocation.x, goalLocation.y);
-		bot.getNav().rotateTo(preferredHeading);
+		bot.getNav().BExecute(new CmdGoTo(goalLocation));
+		bot.getNav().BExecute(new CmdRotateAng(preferredHeading));
 		bot.getGrip().release();
-		bot.getNav().setMoveSpeed(bot.getConfig().operatingSpeed);
 	}
 
 	public void reconfigure(ApproachGoalConfig config)

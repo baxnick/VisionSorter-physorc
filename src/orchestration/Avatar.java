@@ -20,8 +20,6 @@
 package orchestration;
 
 import java.io.IOException;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import orchestration.errand.Errand;
 import orchestration.errand.ErrandOverlord;
@@ -32,8 +30,12 @@ import orchestration.path.RectShape;
 import lcm.lcm.*;
 import lcmtypes.cube_t;
 import lejos.geom.Point;
+import lejos.robotics.Pose;
 import physical.GripperBot;
 import physical.comms.SimpleCallback;
+import physical.navigation.commands.Callback;
+import physical.navigation.commands.Command;
+import physical.navigation.commands.nav.CmdSetPose;
 
 /**
  * The Avatar class works in concert with the Task and strategy.* classes in 
@@ -57,7 +59,6 @@ public class Avatar implements Runnable, Plannable
 	private VisionQuery vision;
 	private CubeSubscriber cubeSubscriber = null;
 	private long lastVision = 0;
-	private long lastMoving = 0;
 
 	private boolean isActive = false;
 	private boolean connectionUp = true;
@@ -194,8 +195,6 @@ public class Avatar implements Runnable, Plannable
 	 */
 	private class CubeSubscriber implements LCMSubscriber
 	{
-		private Lock messageLock = new ReentrantLock();
-
 		public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins)
 		{
 			try
@@ -205,23 +204,14 @@ public class Avatar implements Runnable, Plannable
 				if (!getName().equals(cube.id)) return;
 
 				long now = System.currentTimeMillis();
-				if (Avatar.this.bot.getNav().isMoving()) lastMoving = now;
-
-				if (now - lastVision > cfg.updateFreq && now - lastMoving > cfg.acceptableStillTime)
-				{
-					boolean locked = messageLock.tryLock();
-					if (!locked) return;
-
-					lastVision = now;
-
-					System.out.println(getName() + " @ " + cube.position[0] + ", " + cube.position[1] + ": "
-							+ cube.orientation);
-
-					Avatar.this.bot.getNav().setPose((float) cube.position[0], (float) cube.position[1],
-							(float) cube.orientation);
-
-					messageLock.unlock();
-				}
+				
+				CmdSetPose cSetPose = new CmdSetPose(
+						new Pose((float) cube.position[0], (float) cube.position[1], (float) cube.orientation),
+						now
+				);
+				
+				cSetPose.setCaller(new PoseCallback());
+				Avatar.this.bot.getNav().Execute(cSetPose);
 			}
 			catch (IOException e)
 			{
@@ -231,6 +221,21 @@ public class Avatar implements Runnable, Plannable
 		}
 	}
 
+	private class PoseCallback implements Callback
+	{
+		@Override
+		public void callback(Command cmd)
+		{
+			CmdSetPose set = (CmdSetPose)cmd;
+			if (!set.wasSuccessful()) return;
+			
+			lastVision = System.currentTimeMillis();
+			System.out.println(getName() + " @ " + set.getPose().getX() + ", " + set.getPose().getY() + ": "
+					+ set.getPose().getHeading());
+		}
+		
+	}
+	
 	@Override
 	public String getPlanningName()
 	{
@@ -240,11 +245,9 @@ public class Avatar implements Runnable, Plannable
 	@Override
 	public PlannerShape getPlannerShape()
 	{
-		Point location = bot.location();
-		double heading = bot.heading();
-
+		Pose pose = bot.getNav().getPose();
 		return RectShape.easy(bot.getConfig().trackWidth, bot.getConfig().gripDisplacement
-				+ bot.getConfig().rearDisplacement, location, heading);
+				+ bot.getConfig().rearDisplacement, pose.getLocation(), pose.getHeading());
 	}
 
 	public void reconfigure(AvatarConfig config)

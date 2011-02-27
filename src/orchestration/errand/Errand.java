@@ -26,6 +26,7 @@ import orchestration.object.BotLocationProvider;
 import orchestration.path.PathPlanner;
 import orchestration.path.RouteMaker;
 import physical.GripperBot;
+import physical.navigation.commands.nav.CmdRotate;
 import lejos.geom.Point;
 
 /**
@@ -68,7 +69,7 @@ public class Errand
 	public void assignBot(GripperBot bot)
 	{
 		this.bot = bot;
-		router = new RouteMaker(planner, bot, avatar.getName());
+		router = new RouteMaker(planner, bot.getNav(), avatar.getName());
 	}
 
 	private ErrandState nextState;
@@ -151,7 +152,7 @@ public class Errand
 					Thread.sleep(cfg.visionWaitTime);
 					while (avatar.getVision().needsVision())
 					{
-						bot.getNav().rotate(cfg.visionRotationAmount);
+						bot.getNav().BExecute(new CmdRotate(cfg.visionRotationAmount));
 						Thread.sleep(cfg.visionWaitTime);
 					}
 
@@ -225,18 +226,6 @@ public class Errand
 	private boolean halted = false;
 	private boolean firstHaltFlag = false;
 	private ErrandState savedState;
-
-	public synchronized void halt()
-	{
-		halted = true;
-		firstHaltFlag = true;
-		bot.getNav().softInterrupt();
-	}
-
-	public synchronized void resume()
-	{
-		halted = false;
-	}
 
 	private synchronized void updateState(ErrandState state)
 	{
