@@ -18,7 +18,9 @@ public class NavControl
 	private CommandQueue<NavigatorCommand> commands = new CommandQueue<NavigatorCommand>();
 	private CommandQueue<NavigatorCommand> reads = new CommandQueue<NavigatorCommand>();
 	private NavigatorCommand currentCmd = null;
+	private NavigatorCommand currentRead = null;
 	private boolean active = true;
+	private boolean readPause = false;
 	
 	public NavControl(BetterNavigator nav)
 	{
@@ -64,8 +66,6 @@ public class NavControl
 		return nav.getPose();
 	}
 	
-	private Lock atom = new ReentrantLock();
-	
 	private class Control implements Runnable
 	{
 		@Override
@@ -75,16 +75,20 @@ public class NavControl
 			{
 				Thread.yield();
 				
-				atom.lock();
 				currentCmd = commands.nextCommand();
-				atom.unlock();
-				
 				if (currentCmd == null) continue;
+				
+				if (!currentCmd.isInterruptibile())
+				{
+					readPause = true;
+					while (currentRead != null) Thread.yield();
+				}
 				
 				System.out.println("PROCESSING COMMAND " + currentCmd);
 				currentCmd.setNavigator(nav);
 				currentCmd.execute();
 				currentCmd.finish();
+				readPause = false;
 			}
 		}
 	}
@@ -97,23 +101,17 @@ public class NavControl
 			while (active)
 			{
 				Thread.yield();
-				NavigatorCommand cmd = reads.nextCommand();
-				if (cmd == null) continue;
-
-				atom.lock();
-				if (currentCmd != null && currentCmd.isInterruptibile() == false)
-				{
-					reads.enqueue(cmd);
-					atom.unlock();
-					continue;
-				}
+				while (readPause) Thread.yield();
 				
-				atom.unlock();
+				currentRead = reads.nextCommand();
+				if (currentRead == null) continue;
 
-				System.out.println("PROCESSING READ " + currentCmd);
-				cmd.setNavigator(nav);
-				cmd.execute();
-				cmd.finish();
+				System.out.println("PROCESSING READ " + currentRead);
+				currentRead.setNavigator(nav);
+				currentRead.execute();
+				currentRead.finish();
+				
+				currentRead = null;
 			}
 		}
 	}

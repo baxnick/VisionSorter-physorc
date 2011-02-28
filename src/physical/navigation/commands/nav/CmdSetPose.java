@@ -6,7 +6,7 @@ import lejos.robotics.Pose;
 
 public class CmdSetPose extends NavigatorCommand
 {
-	private static final long acceptableDelay = 30; //ms
+	private static final long acceptableDelay = 10; //ms
 	
 	private Pose newPose;
 	private long timeReceived;
@@ -27,7 +27,9 @@ public class CmdSetPose extends NavigatorCommand
 	@Override
 	public void execute()
 	{
-		if (System.currentTimeMillis() - timeReceived < acceptableDelay)
+		long now = System.currentTimeMillis();
+		
+		if (now - timeReceived < acceptableDelay)
 		{
 			nav.setPose(newPose);
 			success = true;

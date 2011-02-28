@@ -37,5 +37,5 @@ public class AvatarConfig
 
 	// Where is the best position for the robot to be in order to
 	// receive information from the vision system?
-	public Point visionZone = new Point(600, 900);
+	public Point visionZone = new Point(500, 500);
 }

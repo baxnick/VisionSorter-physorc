@@ -249,11 +249,13 @@ public class BetterNavigator
 	{
 		updateLock.lock();
 		poseWrite.lock();
+		pilot.reset();
+		_angle0 = 0;
+		_distance0 = 0;
 		_pose = pose;
 		_estimatedPose = copyPose(pose);
 		poseWrite.unlock();
 		updateLock.unlock();
-
 	}
 
 	public void setPosition(float x, float y, float heading)

@@ -40,8 +40,7 @@ public class FetchBallBehaviour implements BotStrategy
 	public void execute(GripperBot bot) throws InterruptedException
 	{
 		NavControl navCon = bot.getNav();
-		float operatingSpeed = bot.getConfig().operatingSpeed * cfg.moveSpeedFactor;
-		float rotationSpeed = bot.getConfig().rotationSpeed * cfg.turnSpeedFactor;
+		float operatingSpeed = bot.getConfig().operatingSpeed;
 
 		Pose botPose;
 		float ballHeading;
@@ -58,17 +57,19 @@ public class FetchBallBehaviour implements BotStrategy
 			System.out.println("(PRE) " + bot.getConfig().getName() + " @ " + botPose.getX() + ", " + botPose.getY()
 					+ " mh: " + botPose.getHeading() + " bh: " + ballHeading);
 
-			navCon.BExecute(new CmdRotateAng(ballHeading));
+			navCon.BExecute(new CmdRotateTo(target));
 
 			botPose = navCon.getPose();
 			System.out.println("(POST) " + bot.getConfig().getName() + " @ " + botPose.getX() + ", " + botPose.getY()
 					+ " FETCHING ball @ " + target.x + ", " + target.y + " mh: " + botPose.getHeading());
+			
+			Thread.sleep(100);
 		}
 		while (Math.abs(botPose.getHeading() - ballHeading) > cfg.allowedHeadingError);
 
 		CmdDistanceTo cDist = new CmdDistanceTo(target);
 		navCon.BExecute(cDist);
-		float distance = cDist.getDistance() * 1.2f;
+		float distance = cDist.getDistance() * cfg.overshoot;
 
 		CmdTravel cTravel = new CmdTravel(distance);
 		BlockingCallback bc = new BlockingCallback();
@@ -77,7 +78,7 @@ public class FetchBallBehaviour implements BotStrategy
 
 		try
 		{
-			Thread.sleep((int) Math.max(0, (int) (1000. * distance / operatingSpeed) - cfg.overshoot));
+			Thread.sleep((int) Math.max(0, (int) (1000. * distance / operatingSpeed)));
 		}
 		catch (InterruptedException e)
 		{
@@ -87,6 +88,10 @@ public class FetchBallBehaviour implements BotStrategy
 		bot.getGrip().grip();
 		
 		while (!bc.isExecuted()) Thread.yield();
+
+		botPose = navCon.getPose();
+		System.out.println("(FINAL) " + bot.getConfig().getName() + " @ " + botPose.getX() + ", " + botPose.getY() + " mh: " + botPose.getHeading());
+	
 	}
 
 	public void reconfigure(FetchBallConfig config)
