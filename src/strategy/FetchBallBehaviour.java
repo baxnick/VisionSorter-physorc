@@ -63,7 +63,7 @@ public class FetchBallBehaviour implements BotStrategy
 			System.out.println("(POST) " + bot.getConfig().getName() + " @ " + botPose.getX() + ", " + botPose.getY()
 					+ " FETCHING ball @ " + target.x + ", " + target.y + " mh: " + botPose.getHeading());
 			
-			Thread.sleep(100);
+			Thread.sleep(cfg.visionWaitDelay);
 		}
 		while (Math.abs(botPose.getHeading() - ballHeading) > cfg.allowedHeadingError);
 

@@ -6,7 +6,7 @@ import lejos.robotics.Pose;
 
 public class CmdSetPose extends NavigatorCommand
 {
-	private static final long acceptableDelay = 10; //ms
+	private static final long acceptableDelay = 20; //ms
 	
 	private Pose newPose;
 	private long timeReceived;
