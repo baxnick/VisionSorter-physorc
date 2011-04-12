@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<properties>
+
+  <variables>
+    <variable name="my.path" value="/home/foo/data"/>
+    <variable name="user.path" value="${system:user.dir}"/>
+    <variable name="tmp.path" value="${system:java.io.tmpdir}"/>
+  </variables>
+  
+  <category name="general">
+    <property name="upload_dir" value="${my.path}/data"/>
+    <property name="next_dir" value="${user.path}/data"/>   
+    <property name="third_dir" value="${tmp.path}/data"/>   
+  </category>
+  
+</properties>
+

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<properties>
+  <variables>
+    <variable name="my.path" value="/home/foo/data"/>
+  </variables>
+  <category name="general">
+    <property name="upload_dir" value="${my.path}/data"/>
+    <property name="NewsCounter" value="10"/>
+    <property name="showNews" value="true"/>
+    <property name="MyProp" value="Hello world"/>
+  </category>
+  <category name="JDBC">
+    <property name="URL" value="jdbc:mysql://localhost/iportal"/>
+    <property name="DRIVER" value="org.gjt.mm.mysql.Driver"/>
+    <property name="PORT" value="3303"/>
+    <property name="PWD" value="pwd"/>
+    <property name="USER" value="user"/>
+  </category>
+</properties>
+

@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<properties>    
+  
+  <category name="general">
+    <special>one</special>
+    <hello>world</hello>
+    <escapetest>this
+is
+me</escapetest>
+  </category>  
+  <category name="inner" extends="general">
+      <number>one</number>
+      <text>hello wolrd</text>      
+  </category>  
+
+</properties>

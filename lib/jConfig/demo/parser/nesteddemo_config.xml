@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<properties>    
+  
+  <category name="general">
+    <special>one</special>
+    <hello>world</hello>    
+  </category>  
+    <category name="inner">
+      <number>one</number>
+      <text>hello wolrd</text>      
+      <category name="myinner">
+        <inner>value</inner>
+        <category name="moreinner">
+          <hello>universe</hello>
+        </category>
+      </category>
+  </category>  
+
+</properties>

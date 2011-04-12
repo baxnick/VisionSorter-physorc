@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<properties>    
+  <variables>
+    <variable name="testvar" value="VarValue"/>
+  </variables>
+  <category name="general">
+    <special>one</special>
+    <hello>world</hello>    
+  </category>  
+    <category name="inner">
+      <number>one</number>
+      <text>hello wolrd</text>      
+      <category name="myinner">
+        <inner>value</inner>
+        <category name="moreinner">
+          <hello>universe</hello>
+          <vartest>${testvar}-is here</vartest>
+          <newscounter>1000</newscounter>
+        </category>
+      </category>
+  </category>  
+
+</properties>
