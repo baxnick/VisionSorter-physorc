@@ -23,21 +23,18 @@ public class OverheadGripperConfig
 {
 	public boolean reverseDirection;
 	public float operatingSpeedMulti;
-	public int grippedTach = 100;
-	public int releasedTach = 10;
-	public float calibrationArc = 250.0f;
-	public int calibrationSpeed = 60;
+	public int grippedTach = 190;
+	public int releasedTach = 100;
+	public float calibrationArc = 300.0f;
+	public float calibrationSpeed = 60.0f;
 	public int motorId = 1;
 
 	public OverheadGripperConfig()
 	{
-		reverseDirection = false;
+		reverseDirection = true;
 		operatingSpeedMulti = 0.2f;
-
-		grippedTach *= directionMultiplier();
-		releasedTach *= directionMultiplier();
 	}
-
+ 
 	public int directionMultiplier()
 	{
 		return (reverseDirection == true) ? -1 : 1;
@@ -45,6 +42,6 @@ public class OverheadGripperConfig
 
 	public int operatingSpeed()
 	{
-		return (int) (800 * operatingSpeedMulti);
+		return (int) (800.0 * operatingSpeedMulti);
 	}
 }

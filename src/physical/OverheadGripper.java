@@ -40,7 +40,7 @@ public class OverheadGripper implements Gripper
 	public void calibrate()
 	{
 		state = GripperState.CALIBRATING;
-		motor.setSpeed(config.calibrationSpeed);
+		motor.setSpeed((int)config.calibrationSpeed);
 
 		if (config.reverseDirection)
 			motor.forward();
@@ -60,8 +60,8 @@ public class OverheadGripper implements Gripper
 		}
 
 		motor.resetTachoCount();
+		motor.rotateTo(config.releasedTach * config.directionMultiplier(), false);
 		motor.setSpeed(config.operatingSpeed());
-		motor.rotateTo(config.releasedTach, false);
 		state = GripperState.RELEASED;
 	}
 
@@ -73,7 +73,7 @@ public class OverheadGripper implements Gripper
 		if (state == GripperState.RELEASING || state == GripperState.CALIBRATING) return;
 
 		state = GripperState.GRIPPING;
-		motor.rotateTo(config.grippedTach, false);
+		motor.rotateTo(config.grippedTach * config.directionMultiplier(), false);
 		state = GripperState.GRIPPED;
 	}
 
@@ -93,7 +93,7 @@ public class OverheadGripper implements Gripper
 		motor.setSpeed(config.operatingSpeed());
 
 		// TODO Auto-generated method stub
-		motor.rotateTo(config.releasedTach, false);
+		motor.rotateTo(config.releasedTach * config.directionMultiplier(), false);
 
 		state = GripperState.RELEASED;
 	}

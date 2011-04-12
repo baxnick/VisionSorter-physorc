@@ -25,7 +25,6 @@ import lejos.geom.Point;
 
 public class ApproachGoalBehaviour implements BotStrategy
 {
-	private ApproachGoalConfig cfg = new ApproachGoalConfig();
 	private Point goalLocation;
 	private float preferredHeading;
 
@@ -40,10 +39,5 @@ public class ApproachGoalBehaviour implements BotStrategy
 		bot.getNav().BExecute(new CmdGoTo(goalLocation));
 		bot.getNav().BExecute(new CmdRotateAng(preferredHeading));
 		bot.getGrip().release();
-	}
-
-	public void reconfigure(ApproachGoalConfig config)
-	{
-		this.cfg = config;
 	}
 }

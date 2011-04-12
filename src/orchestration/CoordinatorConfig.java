@@ -43,7 +43,7 @@ public class CoordinatorConfig
 				new Point(1140, 1740)};
 		
 		goals = Arrays.asList(
-				(Goal) new LineGoal("EG", BallColor.RED, new Line(1100, 0, 1100, 900), 0)
+				(Goal) new LineGoal("EG", BallColor.RED, new Line(1100, 0, 1100, 900),0)
 				);
 	}
 }

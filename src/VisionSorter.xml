@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<properties>
+	<category name="orchestration">
+	  <property name="strict_bound_x" value="1000" />
+	  <property name="strict_bound_y" value="1000" />
+	  <category name="goals">
+	    <!-- type {line} colour x1 y1 x2 y2 orientation -->
+	    <property name="EG" value="LINE RED 1100 0 110 900 0" />
+	  </category>
+		<category name="errand">
+		  <property name="expiry_allowance" value="30000" />
+		  <property name="vision_wait_time" value="4000" />
+		  <property name="vision_rotate_amount" value="15" />
+		  <property name="fetch_short_distance" value="160" />
+		  
+		 </category>
+		<category name="avatar">
+		  <property name="acceptable_reckoning_time" value="30000" />
+		  <property name="vision_point_x" value="500" />
+		  <property name="vision_point_y" value="500" />
+		</category>
+	</category>
+	
+	<category name="physical">
+		<category name="chassis">
+		  <property name="grip_displacement" value="50.0" />
+		  <property name="rear_displacement" value="145.0" />
+		  <property name="wheel_diameter" value="43.2" />
+		  <property name="track_width" value="122.0" />
+		  <property name="operating_speed" value="120.0" />
+		  <property name="rotation_speed" value="40.0" />
+		  <property name="left_motor_port" value="0" />
+		  <property name="right_motor_port" value="2" />
+		</category>
+		<category name="gripper">
+		  <property name="reverse_direction" value="false" />
+		  <property name="operating_speed_multiplier" value="0.2" />
+		  <property name="gripped_tach" value="100" />
+		  <property name="released_tach" value="10" />
+		  <property name="calibration_arc" value="250.0" />
+		  <property name="calibration_speed" value="60" />
+		  <property name="motor_port" value="1" />
+		  </category>
+	</category>
+	
+	<category name="strategy">
+		<category name="fetchBall">
+		  <property name="overshoot" value="1.2" />
+		  <property name="preempt_time" value="1000" />
+		  <property name="vision_delay" value="300" />
+		  <property name="allowed_heading_error" value="1.5" />
+		</category>
+	</category>
+</properties>

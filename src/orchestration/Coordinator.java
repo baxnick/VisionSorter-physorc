@@ -19,9 +19,15 @@
 
 package orchestration;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.prefs.Preferences;
+
+import org.jconfig.Configuration;
+import org.jconfig.ConfigurationManager;
 
 import orchestration.errand.ErrandOverlord;
 import orchestration.goal.Goal;
@@ -51,11 +57,14 @@ public class Coordinator
 	public PathPlanner planner;
 	public ErrandOverlord overlord;
 	public LCM lcm;
+	public Configuration gCfg;
 	private LiveBotFinder watcher;
 	private CoordinatorConfig cfg = new CoordinatorConfig();
 	
 	public Coordinator()
-	{
+	{  
+		gCfg = ConfigurationManager.getConfiguration("VisionSorter.xml");
+		
 		lcm = LCM.getSingleton();
 		planner = new BraindeadPlanner(this);
 		overlord = new ErrandOverlord(this);

@@ -26,8 +26,8 @@ public class GripperBotConfiguration
 
 	public float gripDisplacement = 50.0f; // how far from the center of movement the grip area is located.
 	public float rearDisplacement = 145.0f; // how far from the center of movement the rear extends
-	public float wheelDiameter = 43.2f; // diameter in mm, is usually written on "official" tyres.
-	public float trackWidth = 122.0f; // mm, how wide across the wheels are spaced
+	public float wheelDiameter = 56.0f; // diameter in mm, is usually written on "official" tyres.
+	public float trackWidth = 120.0f; // mm, how wide across the wheels are spaced
 
 	public float operatingSpeed = 120.0f; // mm / sec for movement
 	public float rotationSpeed = 40.0f; // deg / sec for turning in place

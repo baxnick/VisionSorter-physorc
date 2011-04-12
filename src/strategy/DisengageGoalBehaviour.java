@@ -24,16 +24,9 @@ import physical.navigation.commands.nav.*;
 
 public class DisengageGoalBehaviour implements BotStrategy
 {
-	private DisengageGoalConfig cfg = new DisengageGoalConfig();
-
 	public void execute(GripperBot bot) throws InterruptedException
 	{
 		bot.getGrip().release();
 		bot.getNav().BExecute(new CmdTravel(-bot.safeDistance(0)));
-	}
-
-	public void reconfigure(DisengageGoalConfig config)
-	{
-		this.cfg = config;
 	}
 }
