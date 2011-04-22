@@ -166,6 +166,7 @@ public class BetterNavigatorMach2 implements BetterNavigator
 	{
 		updateLock.lock();
 		poseWrite.lock();
+		pilot.stop();
 		pilot.reset();
 		_angle0 = 0;
 		_distance0 = 0;
