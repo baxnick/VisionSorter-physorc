@@ -137,7 +137,7 @@ public class Avatar implements Runnable, Plannable
 		bot.getNav().shutdown();
 		myThread.interrupt();
 		collisionThread.interrupt();
-		if (task != null) task.abort();
+		if (task != null) task.halt();
 		parent.removeFromDuty(Avatar.this);
 	}
 

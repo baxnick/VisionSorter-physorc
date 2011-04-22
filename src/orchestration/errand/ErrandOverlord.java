@@ -88,7 +88,8 @@ public class ErrandOverlord
 		Ball nearestBall = findNearestBall(avatarLoc);
 		Goal nearestGoal = findBestGoal(avatarLoc, nearestBall);
 
-		Errand newTask = new Errand(this, parent.planner, soldier, nearestBall, nearestGoal);
+		Errand newTask = new Errand(parent.planner, soldier, 
+				new ErrandObjectives(this, nearestBall, nearestGoal));
 		takeBall(nearestBall);
 		tasks.add(newTask);
 
@@ -187,7 +188,7 @@ public class ErrandOverlord
 		List<Ball> activeBalls = new Vector<Ball>();
 
 		for (Errand task : tasks)
-			activeBalls.add(task.getBall());
+			activeBalls.add(task.objective().getBall());
 
 		for (Ball incoming : detectedBalls)
 		{
@@ -209,9 +210,9 @@ public class ErrandOverlord
 
 		for (Errand task : tasks)
 		{
-			if (task.hasBall()) continue;
+			if (task.objective().hasBall()) continue;
 
-			Ball taskBall = task.getBall();
+			Ball taskBall = task.objective().getBall();
 
 			boolean foundMatch = false;
 			for (Ball incoming : detectedBalls)
@@ -219,7 +220,7 @@ public class ErrandOverlord
 				if (areLocationsClose(taskBall.getLocation(), incoming.getLocation()))
 				{
 					foundMatch = true;
-					task.unExpire();
+					task.objective().unExpire();
 					break;
 				}
 			}
@@ -231,7 +232,7 @@ public class ErrandOverlord
 		// invocation can cause it's removal from the task list..
 		for (Errand task : expiredTasks)
 		{
-			task.attemptExpire();
+			task.objective().attemptExpire();
 		}
 
 		supplicantLock.lock();

@@ -20,8 +20,6 @@
 package orchestration.errand;
 
 import orchestration.Avatar;
-import orchestration.goal.Goal;
-import orchestration.object.Ball;
 import orchestration.object.BotLocationProvider;
 import orchestration.path.PathPlanner;
 import orchestration.path.RouteMaker;
@@ -31,7 +29,7 @@ import lejos.geom.Point;
 
 /**
  * An Errand represents the intent of an avatar to deliver a particular ball 
- * to a particular goal. Furthermore, it keeps an internal state machine of the 
+ * to a particular obj.getGoal(). Furthermore, it keeps an internal state machine of the 
  * task progress and manages each stage of the task on behalf of the avatar.
  * 
  * Once the task has been finished, the Task will be discarded, and the avatar 
@@ -44,26 +42,24 @@ public class Errand
 {
 	private PathPlanner planner;
 	private Avatar avatar;
-	private Ball ball;
-	private Goal goal;
 	private GripperBot bot;
-	private ErrandOverlord overlord;
-	private ErrandState state;
-	private RouteMaker router;
+	protected RouteMaker router;
 	private ErrandConfig cfg = new ErrandConfig();
 
+	private ErrandObjectives obj;
+	private ErrandState state;
+	
 	private boolean taskActive = true;
-	private boolean hasBall = false;
-	private long firstExpired = 0;
 
-	public Errand(ErrandOverlord overlord, PathPlanner planner, Avatar avatar, Ball ball, Goal goal)
+	public Errand(PathPlanner planner, Avatar avatar, ErrandObjectives objectives)
 	{
 		this.planner = planner;
-		this.overlord = overlord;
 		this.avatar = avatar;
-		this.ball = ball;
-		this.goal = goal;
-		updateState(ErrandState.FETCHING);
+
+		this.obj = objectives;
+		obj.setExpiryTimeout(cfg.expiryAllowance);
+		
+		this.state = new FetchingState();
 	}
 
 	public void assignBot(GripperBot bot)
@@ -72,196 +68,245 @@ public class Errand
 		router = new RouteMaker(planner, bot.getNav(), avatar.getName());
 	}
 
-	private ErrandState nextState;
-	private ErrandState continuationState;
+	private ErrandState whatToDoNext()
+	{
+		// STATE DECISION TABLE
+		ErrandState nextState = state;
+		
+		if (!state.isFinished())
+		{
+			nextState = state;
+		}
+		else if (state.getClass() == FetchingState.class)
+		{
+			if (state.isFinished()) nextState = new ReturningState();
+		}
+		else if (state.getClass() == ReturningState.class)
+		{
+			if (state.isFinished()) nextState = new EndState();
+		}
+		
+		return nextState;
+	}
 
+	private ErrandState stateBlip()
+	{
+		ErrandState nextState = state;
+		
+		if (haltFlag)
+		{
+			if (state.getClass() == DelayState.class)
+			{
+				System.out.println("WARNING: Delay issued while already in DelayState");
+			}
+			else
+			{
+				haltFlag = false;
+				nextState = new DelayState(state);
+			}
+		}
+		else if (resumeFlag)
+		{
+			resumeFlag = false;
+			if (state.getClass() != DelayState.class)
+			{
+				System.out.println("WARNING: Resume issued while not in DelayState");
+			}
+			else
+			{
+				DelayState delay = (DelayState) state;
+				nextState = delay.resumeState;
+			}
+		}
+		else if (state.getClass() != VisionState.class && avatar.needsVision())
+		{
+			nextState = new VisionState(state);
+		}
+		else if (state.getClass() == VisionState.class && !avatar.needsVision())
+		{
+			VisionState vision = (VisionState) state;
+			nextState = vision.resumeState;
+		}
+		
+		return nextState;
+	}
+	
+	private void handleStateInterruptibly(ErrandState theState)
+	{
+		StateThread stateThread = new StateThread(theState);
+		stateThread.run();
+		
+		while (!theState.isFinished())
+		{
+			if (haltFlag || resumeFlag)
+			{
+				stateThread.interrupt();
+				stateThread.destroy();
+				
+				bot.getNav().shutdown();
+				break;
+			}
+		}
+	}
+	
 	public void fulfil()
 	{
 		while (taskActive)
 		{
+			handleStateInterruptibly(state);
+
+			ErrandState lastState = state;
+			
+			state = whatToDoNext();
+			state = stateBlip();
+			
+			if (lastState != state)
+			{
+				System.out.println(avatar.getName() + " entering state: " + state.getClass().getSimpleName());
+			}
+			
 			Thread.yield();
-			updateState(nextState);
-
-			if (firstHaltFlag && halted)
-			{
-				firstHaltFlag = false;
-				savedState = state;
-				updateState(ErrandState.DELAYED);
-			}
-
-			if (state == ErrandState.FETCHING)
-			{
-				try
-				{
-					Point ballLoc = ball.getLocation();
-					router.follow(router.create(ballLoc, cfg.fetchShortDistance));
-					if (halted) continue;
-					ball.fetch().execute(bot);
-					hasBall = true;
-					unExpire();
-					if (halted) continue;
-
-					if (avatar.getVision().needsVision())
-					{
-						continuationState = ErrandState.RETURNING;
-						nextState = ErrandState.VISION;
-					}
-					else
-						nextState = ErrandState.RETURNING;
-				}
-				catch (InterruptedException e)
-				{
-				}
-			}
-			else if (state == ErrandState.RETURNING)
-			{
-				try
-				{
-					BotLocationProvider mobileProvider = new BotLocationProvider(bot);
-					ball.updateLocation(mobileProvider);
-
-					Point dropLoc = goal.dropPoint(bot.location());
-
-					router.follow(router.create(dropLoc, bot.safeDistance(goal.minimumSafeDistance())));
-					if (halted) continue;
-					goal.approachStrategy(dropLoc).execute(bot);
-					if (halted) continue;
-					ball.updateLocation(mobileProvider.fixLocation());
-					goal.disengageStrategy(dropLoc).execute(bot);
-					if (halted) continue;
-
-					if (avatar.getVision().needsVision())
-					{
-						continuationState = ErrandState.COMPLETED;
-						nextState = ErrandState.VISION;
-					}
-					else
-						nextState = ErrandState.COMPLETED;
-				}
-				catch (InterruptedException e)
-				{
-				}
-			}
-			else if (state == ErrandState.VISION)
-			{
-				try
-				{
-					Point target = avatar.getVision().visionPoint();
-					router.follow(router.create(target));
-
-					Thread.sleep(cfg.visionWaitTime);
-					while (avatar.getVision().needsVision())
-					{
-						bot.getNav().BExecute(new CmdRotate(cfg.visionRotationAmount));
-						Thread.sleep(cfg.visionWaitTime);
-					}
-
-					nextState = continuationState;
-				}
-				catch (InterruptedException e)
-				{
-				}
-			}
-			else if (state == ErrandState.COMPLETED)
-			{
-				System.out.println(ball);
-				taskActive = false;
-				overlord.completeTask(this);
-			}
-			else if (state == ErrandState.ABANDONED)
-			{
-				taskActive = false;
-				bot.getGrip().release();
-
-				if (avatar.getVision().needsVision())
-				{
-					continuationState = ErrandState.ABANDONED;
-					nextState = ErrandState.VISION;
-				}
-				else
-				{
-					overlord.abortTask(this);
-				}
-			}
-			else if (state == ErrandState.DELAYED)
-			{
-				if (!halted)
-				{
-					updateState(savedState);
-				}
-			}
 		}
 	}
-
-	public Ball getBall()
+	
+	private boolean haltFlag = false;
+	public synchronized void halt()
 	{
-		return ball;
+		haltFlag = true;
 	}
-
-	public Goal getGoal()
+	
+	private boolean resumeFlag = false;
+	public synchronized void resume()
 	{
-		return goal;
-	}
-
-	public void abort()
-	{
-		updateState(ErrandState.ABANDONED);
+		resumeFlag = true;
 	}
 
 	public String toString()
 	{
-		return ball.toString() + " to " + goal.toString();
-	}
-
-	public boolean isCompleted()
-	{
-		return state == ErrandState.ABANDONED || state == ErrandState.COMPLETED;
-	}
-
-	public boolean hasBall()
-	{
-		return hasBall;
-	}
-
-	private boolean halted = false;
-	private boolean firstHaltFlag = false;
-	private ErrandState savedState;
-
-	private synchronized void updateState(ErrandState state)
-	{
-		if (isCompleted()) return;
-		if (this.state == state) return;
-		this.state = state;
-		nextState = state;
-		String name = "Unknown";
-		if (bot != null) name = bot.getConfig().getName();
-		System.out.println(name + " state: " + state.toString());
-	}
-
-	public synchronized boolean isHalted()
-	{
-		return state == ErrandState.DELAYED;
-	}
-
-	public void unExpire()
-	{
-		firstExpired = 0;
-	}
-
-	public void attemptExpire()
-	{
-		long now = System.currentTimeMillis();
-
-		if (firstExpired == 0)
-			firstExpired = now;
-		else
-		{
-			if ((now - firstExpired) > cfg.expiryAllowance) abort();
-		}
+		return obj.toString();
 	}
 
 	public void reconfigure(ErrandConfig config)
 	{
 		this.cfg = config;
+	}
+	
+	public boolean isCompleted()
+	{
+		return state.getClass() == EndState.class;
+	}
+
+	public boolean isHalted()
+	{
+		return state.getClass() == DelayState.class;
+	}
+
+	public ErrandObjectives objective()
+	{
+		return obj;
+	}
+	
+	/// The bot is heading to the ball and gripping it
+	private class FetchingState extends ErrandState
+	{
+		@Override
+		public void handle() throws InterruptedException
+		{
+			Point ballLoc = obj.getBall().getLocation();
+			router.follow(router.create(ballLoc, cfg.fetchShortDistance));
+			obj.getBall().fetch().execute(bot);
+			obj.setHasBall(true);
+			finish();
+		}
+	}
+	
+	/// The bot is returning the gripped ball to a goal
+	private class ReturningState extends ErrandState
+	{
+
+		@Override
+		public void handle() throws InterruptedException
+		{					
+			BotLocationProvider mobileProvider = new BotLocationProvider(bot);
+			obj.getBall().updateLocation(mobileProvider);
+	
+			Point dropLoc = obj.getGoal().dropPoint(bot.location());
+	
+			router.follow(router.create(dropLoc, bot.safeDistance(obj.getGoal().minimumSafeDistance())));
+			obj.getGoal().approachStrategy(dropLoc).execute(bot);
+			obj.getBall().updateLocation(mobileProvider.fixLocation());
+			obj.getGoal().disengageStrategy(dropLoc).execute(bot);
+			finish();
+		}
+	}
+	
+	/// The bot is moving to a location where vision is present
+	private class VisionState extends ErrandState
+	{
+		protected ErrandState resumeState;
+		
+		private VisionState(ErrandState resumeState)
+		{
+			this.resumeState = resumeState;
+		}
+		
+		@Override
+		public void handle() throws InterruptedException
+		{
+			Point target = avatar.getVision().visionPoint();
+			router.follow(router.create(target));
+
+			while (avatar.needsVision())
+			{
+				Thread.sleep(cfg.visionWaitTime);
+				bot.getNav().BExecute(new CmdRotate(cfg.visionRotationAmount));
+			}
+			
+			finish();
+		}
+	}
+	
+	/// The bot is avoiding a collision with another bot
+	private class DelayState extends ErrandState
+	{
+		protected ErrandState resumeState;
+		
+		private DelayState(ErrandState resumeState)
+		{
+			this.resumeState = resumeState;
+		}
+		
+		private boolean firstRun = true;
+		
+		@Override
+		public void handle() throws InterruptedException
+		{
+			if (firstRun)
+			{
+				System.out.println(avatar.getName() + " is delayed");
+				firstRun = false;
+			}
+			
+			finish();
+		}
+	}
+	
+	private class EndState extends ErrandState
+	{
+		private boolean firstRun = true;
+		
+		@Override
+		public void handle() throws InterruptedException
+		{
+			taskActive = false;
+			
+			if (firstRun)
+			{
+				System.out.println(avatar.getName() + " has completed it's task.");
+				firstRun = false;
+			}
+			
+			finish();
+		}
 	}
 }
