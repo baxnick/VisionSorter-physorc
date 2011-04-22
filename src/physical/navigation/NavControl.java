@@ -1,8 +1,5 @@
 package physical.navigation;
 
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 import lejos.robotics.Pose;
 import physical.navigation.commands.BlockingCallback;
 import physical.navigation.commands.CommandPriority;
