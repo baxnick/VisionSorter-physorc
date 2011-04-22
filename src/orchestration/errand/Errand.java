@@ -51,6 +51,12 @@ public class Errand
 	
 	private boolean taskActive = true;
 
+	private enum Signal
+	{
+		HALT, RESUME, NONE
+	}
+	private Signal signalFlag = Signal.NONE;
+	
 	public Errand(PathPlanner planner, Avatar avatar, ErrandObjectives objectives)
 	{
 		this.planner = planner;
@@ -73,17 +79,13 @@ public class Errand
 		// STATE DECISION TABLE
 		ErrandState nextState = state;
 		
-		if (!state.isFinished())
+		if (state.getClass() == FetchingState.class)
 		{
-			nextState = state;
+			nextState = new ReturningState();
 		}
-		else if (state.getClass() == FetchingState.class)
+		if (state.getClass() == ReturningState.class)
 		{
-			if (state.isFinished()) nextState = new ReturningState();
-		}
-		else if (state.getClass() == ReturningState.class)
-		{
-			if (state.isFinished()) nextState = new EndState();
+			nextState = new EndState();
 		}
 		
 		return nextState;
@@ -93,7 +95,7 @@ public class Errand
 	{
 		ErrandState nextState = state;
 		
-		if (haltFlag)
+		if (signalFlag == Signal.HALT)
 		{
 			if (state.getClass() == DelayState.class)
 			{
@@ -101,13 +103,13 @@ public class Errand
 			}
 			else
 			{
-				haltFlag = false;
+				signalFlag = Signal.NONE;
 				nextState = new DelayState(state);
 			}
 		}
-		else if (resumeFlag)
+		else if (signalFlag == Signal.RESUME)
 		{
-			resumeFlag = false;
+			signalFlag = Signal.NONE;
 			if (state.getClass() != DelayState.class)
 			{
 				System.out.println("WARNING: Resume issued while not in DelayState");
@@ -131,33 +133,34 @@ public class Errand
 		return nextState;
 	}
 	
-	private void handleStateInterruptibly(ErrandState theState)
+	private boolean handleStateInterruptibly(ErrandState theState)
 	{
 		StateThread stateThread = new StateThread(theState);
-		stateThread.run();
+		stateThread.start();
 		
-		while (!theState.isFinished())
+		while (!stateThread.isFinished())
 		{
-			if (haltFlag || resumeFlag)
+			if (signalFlag != Signal.NONE)
 			{
-				stateThread.interrupt();
-				stateThread.destroy();
-				
-				bot.getNav().shutdown();
-				break;
+				bot.getNav().stop();
+				return false;
 			}
+			
+			Thread.yield();
 		}
+		
+		return true;
 	}
 	
 	public void fulfil()
 	{
 		while (taskActive)
 		{
-			handleStateInterruptibly(state);
-
+			boolean wasInterrupted = handleStateInterruptibly(state);
+			
 			ErrandState lastState = state;
 			
-			state = whatToDoNext();
+			if (!wasInterrupted) state = whatToDoNext();
 			state = stateBlip();
 			
 			if (lastState != state)
@@ -169,16 +172,14 @@ public class Errand
 		}
 	}
 	
-	private boolean haltFlag = false;
 	public synchronized void halt()
 	{
-		haltFlag = true;
+		signalFlag = Signal.HALT;
 	}
 	
-	private boolean resumeFlag = false;
 	public synchronized void resume()
 	{
-		resumeFlag = true;
+		signalFlag = Signal.RESUME;
 	}
 
 	public String toString()
@@ -216,7 +217,6 @@ public class Errand
 			router.follow(router.create(ballLoc, cfg.fetchShortDistance));
 			obj.getBall().fetch().execute(bot);
 			obj.setHasBall(true);
-			finish();
 		}
 	}
 	
@@ -236,7 +236,6 @@ public class Errand
 			obj.getGoal().approachStrategy(dropLoc).execute(bot);
 			obj.getBall().updateLocation(mobileProvider.fixLocation());
 			obj.getGoal().disengageStrategy(dropLoc).execute(bot);
-			finish();
 		}
 	}
 	
@@ -261,8 +260,6 @@ public class Errand
 				Thread.sleep(cfg.visionWaitTime);
 				bot.getNav().BExecute(new CmdRotate(cfg.visionRotationAmount));
 			}
-			
-			finish();
 		}
 	}
 	
@@ -286,8 +283,6 @@ public class Errand
 				System.out.println(avatar.getName() + " is delayed");
 				firstRun = false;
 			}
-			
-			finish();
 		}
 	}
 	
@@ -305,8 +300,6 @@ public class Errand
 				System.out.println(avatar.getName() + " has completed it's task.");
 				firstRun = false;
 			}
-			
-			finish();
 		}
 	}
 }

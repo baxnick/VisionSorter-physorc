@@ -3,6 +3,7 @@ package orchestration.errand;
 public class StateThread extends Thread
 {
 	ErrandState stateToThread;
+	private boolean finished = false;
 	
 	public StateThread(ErrandState stateToThread)
 	{
@@ -16,7 +17,13 @@ public class StateThread extends Thread
 		{
 			stateToThread.handle();
 		}
-		catch (InterruptedException ex) { } // Mission accomplished
+		catch (InterruptedException ex) { }
+		finally {finished = true;} // Mission accomplished
 		// The exception just needs to escape the handle() method
+	}
+	
+	public boolean isFinished()
+	{
+		return finished;
 	}
 }

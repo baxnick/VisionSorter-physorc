@@ -21,9 +21,5 @@ package orchestration.errand;
 
 public abstract class ErrandState
 {
-	private boolean finished = false;
-	
-	protected void finish() {finished = true;}
-	public boolean isFinished() {return finished;}
 	public abstract void handle() throws InterruptedException;
 }
