@@ -18,7 +18,6 @@ public class NavControl
 	private NavigatorCommand currentRead = null;
 	private boolean active = true;
 	private boolean readPause = false;
-	private boolean haltFlag = false;
 	
 	public NavControl(BetterNavigator nav)
 	{
@@ -50,16 +49,10 @@ public class NavControl
 		else
 			commands.enqueue(cmd);
 	}
-
-	public synchronized void restart()
-	{
-		haltFlag = false;
-	}
 	
 	public synchronized void stop()
 	{
-		haltFlag = true;
-		
+		currentCmd.halt();
 		reads.clear();
 		commands.clear();
 	}
