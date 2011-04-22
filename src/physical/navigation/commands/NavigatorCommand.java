@@ -10,4 +10,16 @@ public abstract class NavigatorCommand extends Command
 	{
 		this.nav = nav;
 	}
+	
+	protected void waitForMovementEnd()
+	{
+		while (nav.isMoving())
+		{
+			Thread.yield();
+			if (halted())
+			{
+				break;
+			}
+		}
+	}
 }

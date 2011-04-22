@@ -104,15 +104,6 @@ public class NavControl
 				try
 				{
 					currentCmd.execute();
-					while (nav.isMoving())
-					{
-						Thread.yield();
-						if (haltFlag)
-						{
-							currentCmd.halt();
-							break;
-						}
-					}
 				}
 				catch (InterruptedException ex)
 				{

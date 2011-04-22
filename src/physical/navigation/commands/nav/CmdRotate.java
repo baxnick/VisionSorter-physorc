@@ -17,5 +17,6 @@ public class CmdRotate extends NavigatorCommand
 	public void execute()
 	{
 		nav.rotate(amount, true);
+		waitForMovementEnd();
 	}
 }

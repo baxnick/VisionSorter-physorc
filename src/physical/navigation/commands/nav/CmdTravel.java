@@ -17,6 +17,7 @@ public class CmdTravel extends NavigatorCommand
 	public void execute() throws InterruptedException
 	{
 			nav.travel(distance, true);
+			waitForMovementEnd();
 	}
 	
 }

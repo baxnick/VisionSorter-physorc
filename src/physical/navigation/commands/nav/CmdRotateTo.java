@@ -18,5 +18,6 @@ public class CmdRotateTo extends NavigatorCommand
 	public void execute() throws InterruptedException
 	{
 		nav.rotateTo(nav.angleTo(target.x, target.y), true);
+		waitForMovementEnd();
 	}
 }

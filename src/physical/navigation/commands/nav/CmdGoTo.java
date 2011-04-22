@@ -18,6 +18,7 @@ public class CmdGoTo extends NavigatorCommand
 	public void execute() throws InterruptedException
 	{
 		nav.goTo(target.x, target.y, true);
+		waitForMovementEnd();
 	}
 
 }
