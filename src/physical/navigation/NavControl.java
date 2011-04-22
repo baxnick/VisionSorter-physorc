@@ -21,6 +21,7 @@ public class NavControl
 	private NavigatorCommand currentRead = null;
 	private boolean active = true;
 	private boolean readPause = false;
+	private boolean haltFlag = false;
 	
 	public NavControl(BetterNavigator nav)
 	{
@@ -53,6 +54,19 @@ public class NavControl
 			commands.enqueue(cmd);
 	}
 
+	public synchronized void restart()
+	{
+		haltFlag = false;
+	}
+	
+	public synchronized void stop()
+	{
+		haltFlag = true;
+		
+		reads.clear();
+		commands.clear();
+	}
+	
 	public void shutdown()
 	{
 		this.active = false;
@@ -83,12 +97,32 @@ public class NavControl
 					readPause = true;
 					while (currentRead != null) Thread.yield();
 				}
-				
+
 				System.out.println("PROCESSING COMMAND " + currentCmd);
 				currentCmd.setNavigator(nav);
-				currentCmd.execute();
-				currentCmd.finish();
-				readPause = false;
+				
+				try
+				{
+					currentCmd.execute();
+					while (nav.isMoving())
+					{
+						Thread.yield();
+						if (haltFlag)
+						{
+							currentCmd.halt();
+							break;
+						}
+					}
+				}
+				catch (InterruptedException ex)
+				{
+					currentCmd.halt();
+				}
+				finally
+				{
+					currentCmd.finish();
+					readPause = false;
+				}
 			}
 		}
 	}
@@ -108,10 +142,20 @@ public class NavControl
 
 				System.out.println("PROCESSING READ " + currentRead);
 				currentRead.setNavigator(nav);
-				currentRead.execute();
-				currentRead.finish();
 				
-				currentRead = null;
+				try
+				{
+					currentRead.execute();
+				}
+				catch (InterruptedException ex)
+				{
+					currentRead.halt();
+				}
+				finally
+				{
+					currentRead.finish();
+					currentRead = null;
+				}
 			}
 		}
 	}

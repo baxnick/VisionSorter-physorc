@@ -15,16 +15,8 @@ public class CmdRotateAng extends NavigatorCommand
 	}
 
 	@Override
-	public void execute()
+	public void execute() throws InterruptedException
 	{
-		try
-		{
-			nav.rotateTo(angle);
-		}
-		catch (InterruptedException e)
-		{
-			// TODO Auto-generated catch block BAD
-			e.printStackTrace();
-		}
+		nav.rotateTo(angle, true);
 	}
 }

@@ -16,6 +16,6 @@ public class CmdRotate extends NavigatorCommand
 	@Override
 	public void execute()
 	{
-		nav.rotate(amount);
+		nav.rotate(amount, true);
 	}
 }

@@ -15,17 +15,9 @@ public class CmdGoTo extends NavigatorCommand
 	}
 	
 	@Override
-	public void execute()
+	public void execute() throws InterruptedException
 	{
-		try
-		{
-			nav.goTo(target.x, target.y);
-		}
-		catch (InterruptedException e)
-		{
-			// TODO Auto-generated catch block BAD
-			e.printStackTrace();
-		}
+		nav.goTo(target.x, target.y, true);
 	}
 
 }

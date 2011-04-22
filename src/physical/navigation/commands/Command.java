@@ -1,11 +1,16 @@
 package physical.navigation.commands;
 
+/**
+ * The command should either return immediately, or respond to halt()
+ * @author baxnick
+ */
 public abstract class Command implements Comparable<Command>
 {
 	private Callback caller;
 	private CommandPriority priority;
 	private boolean uniquity;
 	private boolean interruptibility;
+	private boolean haltFlag = false;
 	
 	public Command()
 	{
@@ -13,6 +18,16 @@ public abstract class Command implements Comparable<Command>
 		this.priority = CommandPriority.LOW;
 		this.uniquity = false;
 		this.interruptibility = false;
+	}
+
+	public boolean halted()
+	{
+		return haltFlag;
+	}
+	
+	public void halt()
+	{
+		haltFlag = true;
 	}
 	
 	public void setCaller(Callback caller)
@@ -47,7 +62,7 @@ public abstract class Command implements Comparable<Command>
 		this.interruptibility = interruptibility;
 	}
 	
-	public abstract void execute();
+	public abstract void execute() throws InterruptedException;
 	public void finish()
 	{
 		if (caller != null)
