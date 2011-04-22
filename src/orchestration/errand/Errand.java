@@ -83,7 +83,7 @@ public class Errand
 		{
 			nextState = new ReturningState();
 		}
-		if (state.getClass() == ReturningState.class)
+		else if (state.getClass() == ReturningState.class)
 		{
 			nextState = new EndState();
 		}
@@ -143,13 +143,13 @@ public class Errand
 			if (signalFlag != Signal.NONE)
 			{
 				bot.getNav().stop();
-				return false;
+				return true;
 			}
 			
 			Thread.yield();
 		}
 		
-		return true;
+		return false;
 	}
 	
 	public void fulfil()
