@@ -14,7 +14,7 @@ public class CmdRotate extends NavigatorCommand
 	}
 
 	@Override
-	public void execute()
+	public void execute() throws InterruptedException
 	{
 		nav.rotate(amount, true);
 		waitForMovementEnd();

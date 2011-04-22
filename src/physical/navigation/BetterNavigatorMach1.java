@@ -53,7 +53,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * will run along the x axis.<br>
  * 
  */
-public class BetterNavigator
+public class BetterNavigatorMach1 implements BetterNavigator
 {
 	private Lock updateLock = new ReentrantLock();
 	private ReadWriteLock poseLock = new ReentrantReadWriteLock();
@@ -66,7 +66,7 @@ public class BetterNavigator
 	 * @param pilot
 	 *           can be any class that implements the pilot interface
 	 */
-	public BetterNavigator(Pilot pilot)
+	public BetterNavigatorMach1(Pilot pilot)
 	{
 		this.pilot = pilot;
 	}
@@ -91,7 +91,7 @@ public class BetterNavigator
 	 * @deprecated The correct way is to create the Pilot in advance and to use that in construction of the
 	 *             BetterNavigator. Otherwise the BetterNavigator needs to know detail it should not care about!
 	 */
-	public BetterNavigator(float wheelDiameter, float trackWidth, TachoMotor leftMotor, TachoMotor rightMotor,
+	public BetterNavigatorMach1(float wheelDiameter, float trackWidth, TachoMotor leftMotor, TachoMotor rightMotor,
 			boolean reverse)
 	{
 		// In the signature Motor was not changed to TachoMotor. This method only saves one to write "new TachoPilot" at
@@ -118,7 +118,7 @@ public class BetterNavigator
 	 * @deprecated The correct way is to create the Pilot in advance and to use that in construction of the
 	 *             BetterNavigator. Otherwise the BetterNavigator needs to know detail it should not care about!
 	 */
-	public BetterNavigator(float wheelDiameter, float trackWidth, TachoMotor leftMotor, TachoMotor rightMotor)
+	public BetterNavigatorMach1(float wheelDiameter, float trackWidth, TachoMotor leftMotor, TachoMotor rightMotor)
 	{
 		// In the signature Motor was not changed to TachoMotor. This method only saves one to write "new TachoPilot" at
 		// the
@@ -438,12 +438,6 @@ public class BetterNavigator
 	}
 
 	private Point tracked_point = new Point(0, 0);
-
-	public void trackPoint(Point newPoint)
-	{
-		tracked_point.setLocation(newPoint);
-	}
-
 	private Point adjustedPoint(float targetX, float targetY, float gotoAngle, int multiplier)
 	{
 		// x is ignored totally for now
@@ -795,4 +789,10 @@ public class BetterNavigator
 	private boolean _interrupted = false;
 
 	private Pilot pilot;
+
+	@Override
+	public void setTrackingOffset(Point point)
+	{
+		tracked_point.setLocation(point);
+	}
 }
