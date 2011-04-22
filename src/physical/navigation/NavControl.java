@@ -67,7 +67,7 @@ public class NavControl
 		CmdPose cPose = new CmdPose();
 		BExecute(cPose);
 		
-		return nav.getPose();
+		return cPose.getPose();
 	}
 	
 	private class Control implements Runnable
