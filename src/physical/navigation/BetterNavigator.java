@@ -23,5 +23,5 @@ public interface BetterNavigator
 	void rotate(float angle,    boolean returnImmediately) throws InterruptedException;
 	void rotateTo(float angle,  boolean returnImmediately) throws InterruptedException;
 	void travel(float distance, boolean returnImmediately) throws InterruptedException;
-
+	void stop() throws InterruptedException;
 }

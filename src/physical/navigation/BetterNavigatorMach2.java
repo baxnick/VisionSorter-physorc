@@ -261,4 +261,14 @@ public class BetterNavigatorMach2 implements BetterNavigator
 
 		return ret;
 	}
+	
+	/**
+	 * Stops the robot. Depending on the robot speed, it travels a bit before actually coming to a complete halt.
+	 */
+	public void stop()
+	{
+		pilot.stop();
+		updatePose();
+	}
+
 }

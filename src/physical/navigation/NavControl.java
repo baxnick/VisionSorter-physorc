@@ -5,6 +5,7 @@ import physical.navigation.commands.BlockingCallback;
 import physical.navigation.commands.CommandPriority;
 import physical.navigation.commands.NavigatorCommand;
 import physical.navigation.commands.nav.CmdPose;
+import physical.navigation.commands.nav.CmdStop;
 
 public class NavControl
 {
@@ -55,6 +56,8 @@ public class NavControl
 		currentCmd.halt();
 		reads.clear();
 		commands.clear();
+		
+		BExecute(new CmdStop());
 	}
 	
 	public void shutdown()
