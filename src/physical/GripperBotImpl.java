@@ -24,7 +24,7 @@ import java.io.IOException;
 import physical.comms.FaultFilter;
 import physical.comms.SimpleCallback;
 import physical.navigation.BetterNavigator;
-import physical.navigation.BetterNavigatorMach1;
+import physical.navigation.BetterNavigatorMach2;
 import physical.navigation.NavControl;
 
 import lejos.geom.Point;
@@ -84,7 +84,7 @@ public class GripperBotImpl implements GripperBot
 		pilot = new TachoPilot(config.wheelDiameter, config.trackWidth, left, right);
 		pilot.reset();
 
-		BetterNavigator nav = new BetterNavigatorMach1(pilot);
+		BetterNavigator nav = new BetterNavigatorMach2(pilot);
 		nav.setTrackingOffset(new Point(0, config.gripDisplacement));
 		nav.setTurnSpeed(config.rotationSpeed);
 		nav.setMoveSpeed(config.operatingSpeed);
